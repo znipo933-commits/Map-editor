@@ -66,6 +66,7 @@ jobs:
         shell: pwsh
         run: |
           cmake -B build -A x64 `
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
             -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
             -DVCPKG_TARGET_TRIPLET=x64-windows `
             -DCMAKE_BUILD_TYPE=RelWithDebInfo
