@@ -177,6 +177,10 @@
 
 		<client name="8.60" otb="8.60" visible="true" data_directory="860">
 			<otbm version="3"/>
+			<!-- OTBM 4 carries the item attribute map, which is what keeps
+			     CipSoft-only data (quest numbers, key/door ids) alive across
+			     an edit. Required for .sec support. -->
+			<otbm version="4"/>
 			<extensions from="8.20 - 8.31" to="8.60"/>
 			<data format="8.6" dat="0x4C2C7993" spr="0x4C220594"/>
 			<data format="8.6" dat="0x4C6A4CBC" spr="0x4C63F145"/>

@@ -17,6 +17,8 @@
 
 #include "main.h"
 
+#include "iomap_sec.h"
+
 #include "gui.h" // loadbar
 
 #include "map.h"
@@ -49,7 +51,13 @@ bool Map::open(const std::string file)
 
 	tilecount = 0;
 
-	IOMapOTBM maploader(getVersion());
+	// A CipSoft map is a directory of .sec sectors rather than a single
+	// OTBM file, so pick the backend from the path.
+	IOMapOTBM otbm_loader(getVersion());
+	IOMapSec sec_loader(getVersion());
+	IOMap& maploader = IOMapSec::isSecMap(wxstr(file))
+		? static_cast<IOMap&>(sec_loader)
+		: static_cast<IOMap&>(otbm_loader);
 
 	bool success = maploader.loadMap(*this, wxstr(file));
 

@@ -1,0 +1,20 @@
+# Tibia - graphical Multi-User-Dungeon
+# Data for sector 1000/1000/7
+
+0-0: Content={4600}
+0-1: Refresh, Content={4515, 4726, 2992 Amount=88, 611}
+0-2: ProtectionZone, Content={103}
+0-3: NoLogout, Content={103}
+0-4: Refresh, ProtectionZone, NoLogout, Content={103}
+0-5: Refresh, 
+1-0: Content={351, 2012 String="WARNING! Don't forget your rope."}
+1-1: Content={355, 3505 String="line one\nline two" Editor="Someone"}
+1-2: Refresh, Content={4529, 1106, 2547 ChestQuestNumber=17 Content={3587 Amount=1}}
+1-3: Refresh, Content={429, 2546 ChestQuestNumber=25 Content={2853 Content={3031 Amount=50, 1781 Amount=5, 3551}}}
+1-4: Content={429, 2546 ChestQuestNumber=26 Content={2853 Content={2874 ContainerLiquidType=9, 2992 Amount=4, 3466}}}
+1-5: Content={486, 5022 AbsTeleportDestination=-2010517994}
+2-0: Content={4600 PoolLiquidType=1}
+2-1: Content={1234 KeyholeNumber=5, 2345 DoorQuestNumber=7 DoorQuestValue=1}
+2-2: Content={3456 KeyNumber=42 Level=3 RemainingUses=9 Charges=2}
+2-3: Content={4567 RemainingExpireTime=100 SavedExpireTime=200}
+31-31: Content={100}

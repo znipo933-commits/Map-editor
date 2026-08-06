@@ -17,6 +17,8 @@
 
 #include "main.h"
 
+#include "iomap_sec.h"
+
 #include "editor.h"
 #include "materials.h"
 #include "map.h"
@@ -97,7 +99,12 @@ Editor::Editor(CopyBuffer& copybuffer, const FileName& fn) :
 	replace_brush(nullptr)
 {
 	MapVersion ver;
-	if(!IOMapOTBM::getVersionInfo(fn, ver)) {
+	if(IOMapSec::isSecMap(fn)) {
+		// .sec sectors carry no version header; they are always the
+		// CipSoft 7.7 map read through the currently loaded client.
+		ver.otbm = MAP_OTBM_4;
+		ver.client = CLIENT_VERSION_860;
+	} else if(!IOMapOTBM::getVersionInfo(fn, ver)) {
 		// g_gui.PopupDialog("Error", "Could not open file \"" + fn.GetFullPath() + "\".", wxOK);
 		throw std::runtime_error("Could not open file \"" + nstr(fn.GetFullPath()) + "\".\nThis is not a valid OTBM file or it does not exist.");
 	}
@@ -348,7 +355,11 @@ void Editor::saveMap(FileName filename, bool showdialog)
 			g_gui.CreateLoadBar("Saving OTBM map...");
 
 		// Perform the actual save
-		IOMapOTBM mapsaver(map.getVersion());
+		IOMapOTBM otbm_saver(map.getVersion());
+		IOMapSec sec_saver(map.getVersion());
+		IOMap& mapsaver = IOMapSec::isSecMap(fn)
+			? static_cast<IOMap&>(sec_saver)
+			: static_cast<IOMap&>(otbm_saver);
 		bool success = mapsaver.saveMap(map, fn);
 
 		if(showdialog)

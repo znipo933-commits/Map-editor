@@ -1,0 +1,98 @@
+name: Build RME with CipSoft .sec support
+
+# The .sec format test runs first and gates the Windows build, so a binary
+# is only ever produced from a tree whose map round-trip is proven lossless.
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  sec-format-test:
+    name: .sec round-trip test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the format test
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror \
+              -o test_sec_roundtrip \
+              source/sec_format.cpp source/test_sec_roundtrip.cpp
+
+      - name: Round-trip the fixtures
+        run: |
+          ./test_sec_roundtrip test/sec_fixtures
+
+      # Point SEC_MAP_DIR at a real map checkout to test against the full
+      # 9873-sector map instead of the small fixture set.
+      - name: Round-trip a full map (optional)
+        if: ${{ env.SEC_MAP_DIR != '' }}
+        run: |
+          ./test_sec_roundtrip "$SEC_MAP_DIR"
+
+  build-windows:
+    name: Windows build
+    needs: sec-format-test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:/vcpkg/installed
+            C:/vcpkg/packages
+          key: vcpkg-${{ runner.os }}-wx-boost-v1
+
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          vcpkg install `
+            wxwidgets:x64-windows `
+            boost-date-time:x64-windows `
+            boost-system:x64-windows `
+            boost-filesystem:x64-windows `
+            boost-iostreams:x64-windows `
+            fmt:x64-windows `
+            nlohmann-json:x64-windows `
+            zlib:x64-windows `
+            freeglut:x64-windows
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          cmake -B build -A x64 `
+            -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
+            -DVCPKG_TARGET_TRIPLET=x64-windows `
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build --config RelWithDebInfo --parallel
+
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Get-ChildItem -Recurse -Path build -Include rme.exe | ForEach-Object {
+            Copy-Item $_.FullName -Destination dist
+          }
+          Copy-Item -Recurse -Force data dist/data
+          # Record exactly what went into the binary.
+          "commit: ${{ github.sha }}"          | Out-File dist/BUILD_INFO.txt -Encoding utf8
+          "workflow run: ${{ github.run_id }}" | Out-File dist/BUILD_INFO.txt -Append -Encoding utf8
+          Get-FileHash dist/rme.exe -Algorithm SHA256 |
+            Format-List | Out-File dist/BUILD_INFO.txt -Append -Encoding utf8
+
+      - name: Show binary hash
+        shell: pwsh
+        run: Get-Content dist/BUILD_INFO.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rme-sec-windows-x64
+          path: dist
