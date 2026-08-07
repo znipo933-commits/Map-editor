@@ -1,0 +1,402 @@
+MSBuild version 18.8.2+ce25c0108 for .NET Framework
+
+  1>Checking Build System
+  Building Custom Rule D:/a/Map-editor/Map-editor/CMakeLists.txt
+  about_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/about_window.cpp')
+  
+  action.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/action.cpp')
+  
+  actions_history_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/actions_history_window.cpp')
+  
+  application.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/application.cpp')
+  
+  artprovider.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/artprovider.cpp')
+  
+  basemap.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/basemap.cpp')
+  
+  brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/brush.cpp')
+  
+  brush_tables.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/brush_tables.cpp')
+  
+  browse_tile_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/browse_tile_window.cpp')
+  
+  positionctrl.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/positionctrl.cpp')
+  
+  carpet_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/carpet_brush.cpp')
+  
+  client_version.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/client_version.cpp')
+  
+  common.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/common.cpp')
+  
+  common_windows.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/common_windows.cpp')
+  
+  complexitem.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/complexitem.cpp')
+  
+  container_properties_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/container_properties_window.cpp')
+  
+  copybuffer.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/copybuffer.cpp')
+  
+  creature_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/creature_brush.cpp')
+  
+  creature.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/creature.cpp')
+  
+  creatures.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/creatures.cpp')
+  
+  Generating Code...
+  Compiling...
+  dat_debug_view.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/dat_debug_view.cpp')
+  
+  dcbutton.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/dcbutton.cpp')
+  
+  doodad_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/doodad_brush.cpp')
+  
+  duplicated_items_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/duplicated_items_window.cpp')
+  
+  editor.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/editor.cpp')
+  
+  editor_tabs.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/editor_tabs.cpp')
+  
+  eraser_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/eraser_brush.cpp')
+  
+  extension.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/extension.cpp')
+  
+  extension_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/extension_window.cpp')
+  
+  find_item_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/find_item_window.cpp')
+  
+  filehandle.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/filehandle.cpp')
+  
+  graphics.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/graphics.cpp')
+  
+  ground_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/ground_brush.cpp')
+  
+  gui.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/gui.cpp')
+  
+  house_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/house_brush.cpp')
+  
+  house.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/house.cpp')
+  
+  house_exit_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/house_exit_brush.cpp')
+  
+  iomap.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/iomap.cpp')
+  
+  iomap_otbm.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/iomap_otbm.cpp')
+  
+  iomap_sec.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/iomap_sec.cpp')
+  
+  Generating Code...
+  Compiling...
+  sec_format.cpp
+  iominimap.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/iominimap.cpp')
+  
+  item_attributes.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/item_attributes.cpp')
+  
+  item.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/item.cpp')
+  
+  items.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/items.cpp')
+  
+  light_drawer.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/light_drawer.cpp')
+  
+  live_action.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/live_action.cpp')
+  
+  live_client.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/live_client.cpp')
+  
+  live_peer.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/live_peer.cpp')
+  
+  live_server.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/live_server.cpp')
+  
+  live_socket.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/live_socket.cpp')
+  
+  live_tab.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/live_tab.cpp')
+  
+  main_menubar.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/main_menubar.cpp')
+  
+  main_toolbar.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/main_toolbar.cpp')
+  
+  map.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/map.cpp')
+  
+  map_display.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/map_display.cpp')
+  
+  map_drawer.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/map_drawer.cpp')
+  
+  map_region.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/map_region.cpp')
+  
+  map_tab.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/map_tab.cpp')
+  
+  map_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/map_window.cpp')
+  
+  Generating Code...
+  Compiling...
+  materials.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/materials.cpp')
+  
+  minimap_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/minimap_window.cpp')
+  
+  mkpch.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/mkpch.cpp')
+  
+  mt_rand.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/mt_rand.cpp')
+  
+  net_connection.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/net_connection.cpp')
+  
+  numbertextctrl.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/numbertextctrl.cpp')
+  
+  old_properties_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/old_properties_window.cpp')
+  
+  palette_brushlist.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/palette_brushlist.cpp')
+  
+  palette_common.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/palette_common.cpp')
+  
+  palette_creature.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/palette_creature.cpp')
+  
+  palette_house.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/palette_house.cpp')
+  
+  palette_waypoints.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/palette_waypoints.cpp')
+  
+  palette_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/palette_window.cpp')
+  
+  pngfiles.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/pngfiles.cpp')
+  
+  preferences.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/preferences.cpp')
+  
+  process_com.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/process_com.cpp')
+  
+  properties_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/properties_window.cpp')
+  
+  raw_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/raw_brush.cpp')
+  
+  replace_items_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/replace_items_window.cpp')
+  
+  result_window.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/result_window.cpp')
+  
+  Generating Code...
+  Compiling...
+  rme_net.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/rme_net.cpp')
+  
+  selection.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/selection.cpp')
+  
+  settings.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/settings.cpp')
+  
+  spawn_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/spawn_brush.cpp')
+  
+  spawn.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/spawn.cpp')
+  
+  table_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/table_brush.cpp')
+  
+  templatemap76-74.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/templatemap76-74.cpp')
+  
+  templatemap81.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/templatemap81.cpp')
+  
+  templatemap854.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/templatemap854.cpp')
+  
+  templatemapclassic.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/templatemapclassic.cpp')
+  
+  tile.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/tile.cpp')
+  
+  tileset.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/tileset.cpp')
+  
+  town.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/town.cpp')
+  
+  updater.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/updater.cpp')
+  
+  wall_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/wall_brush.cpp')
+  
+  waypoint_brush.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/waypoint_brush.cpp')
+  
+  waypoints.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/waypoints.cpp')
+  
+  welcome_dialog.cpp
+D:\a\Map-editor\Map-editor\source\main.h(49,10): error C1083: Cannot open include file: 'asio.hpp': No such file or directory [D:\a\Map-editor\Map-editor\build\rme.vcxproj]
+  (compiling source file '../source/welcome_dialog.cpp')
+  
+  Generating Code...
