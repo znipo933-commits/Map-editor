@@ -47,6 +47,7 @@ int main(int argc, char** argv)
 
 	size_t ok = 0, mismatched = 0, failed = 0, tiles = 0, items = 0;
 	size_t bad_names = 0;
+	size_t blob_failures = 0;
 
 	for(size_t i = 0; i < files.size(); ++i) {
 		const std::string raw = readFile(files[i]);
@@ -65,6 +66,19 @@ int main(int argc, char** argv)
 			tiles += sector.tiles.size();
 			for(size_t t = 0; t < sector.tiles.size(); ++t) {
 				items += sector.tiles[t].content.size();
+
+				// dumpContent/parseContent round-trip - the pair the
+				// editor uses to park container subtrees it cannot
+				// represent. Text -> items -> text must be identity.
+				const std::string blob = sec::dumpContent(sector.tiles[t].content);
+				std::vector<sec::Item> back;
+				if(!sec::parseContent(blob, back) || sec::dumpContent(back) != blob) {
+					++blob_failures;
+					if(blob_failures <= 3) {
+						std::cout << "  CONTENT BLOB round-trip failed in " << base
+						          << " tile " << sector.tiles[t].x << "-" << sector.tiles[t].y << "\n";
+					}
+				}
 			}
 
 			const std::string out = sec::dump(sector);
@@ -102,7 +116,8 @@ int main(int argc, char** argv)
 	std::cout << "byte-exact: " << ok
 	          << "   mismatched: " << mismatched
 	          << "   parse errors: " << failed
-	          << "   filename issues: " << bad_names << "\n";
+	          << "   filename issues: " << bad_names
+	          << "   content-blob failures: " << blob_failures << "\n";
 
-	return (mismatched == 0 && failed == 0 && bad_names == 0) ? 0 : 1;
+	return (mismatched == 0 && failed == 0 && bad_names == 0 && blob_failures == 0) ? 0 : 1;
 }

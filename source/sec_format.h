@@ -70,6 +70,14 @@ namespace sec {
 	Sector parse(const std::string& text);
 	std::string dump(const Sector& sector);
 
+	// Serialise a content list to the inner text of a Content={...} block
+	// ("item, item, ...") and back. Used to park a container's contents
+	// verbatim on an item RME cannot represent as a container, so they
+	// survive a load/save cycle untouched. parseContent returns false on
+	// malformed input instead of throwing.
+	std::string dumpContent(const std::vector<Item>& items);
+	bool parseContent(const std::string& text, std::vector<Item>& out);
+
 	// "0996-0984-07.sec" -> 996 / 984 / 7. Returns false if it does not match.
 	bool parseFilename(const std::string& basename, int& sx, int& sy, int& sz);
 	std::string makeFilename(int sx, int sy, int sz);

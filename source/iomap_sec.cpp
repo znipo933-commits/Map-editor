@@ -44,6 +44,12 @@ namespace {
 	// Prefix used when parking an unmapped .sec attribute on an item.
 	const char* SEC_ATTR_PREFIX = "sec.";
 
+	// Key (behind the prefix) holding a container subtree parked verbatim
+	// on an item whose id is not a container in the loaded item database.
+	// Double underscore so it can never collide with a real .sec attribute
+	// name, which the grammar restricts to [A-Za-z][A-Za-z0-9]*.
+	const char* ATTR_PARKED_CONTENT = "__Content";
+
 	std::string readWholeFile(const wxString& path)
 	{
 		std::ifstream in(std::string(path.mb_str()), std::ios::binary);
@@ -133,7 +139,7 @@ Item* IOMapSec::createItem(const sec::Item& source, const Position& pos)
 		const std::string& name = source.attrs[i].first;
 		const std::string& raw = source.attrs[i].second;
 
-		if(name == ATTR_AMOUNT || name == ATTR_POOL_LIQUID || name == ATTR_CONTAINER_LIQUID) {
+		if(name == ATTR_AMOUNT) {
 			long value = 0;
 			if(sec::toInt(raw, value)) {
 				item->setSubtype((uint16_t)value);
@@ -143,6 +149,17 @@ Item* IOMapSec::createItem(const sec::Item& source, const Position& pos)
 		if(name == ATTR_STRING) {
 			item->setText(sec::unquote(raw));
 			continue;
+		}
+		if(name == ATTR_POOL_LIQUID || name == ATTR_CONTAINER_LIQUID) {
+			// Set the subtype so the editor renders a liquid, but ALSO
+			// fall through and park the raw value: CipSoft's liquid
+			// numbering is not RME's, and Item::getCount() returns a
+			// constant 1 for non-stackables, so the only way to write
+			// the correct value back is to keep the original.
+			long value = 0;
+			if(sec::toInt(raw, value)) {
+				item->setSubtype((uint16_t)value);
+			}
 		}
 
 		// No RME equivalent: keep it verbatim so saving restores it. The
@@ -165,9 +182,15 @@ Item* IOMapSec::createItem(const sec::Item& source, const Position& pos)
 					container->getVector().push_back(child);
 				}
 			}
-		} else if(!source.content.empty()) {
-			warning("Item %d at %d:%d:%d has contents but is not a container",
-			        (int)source.id, pos.x, pos.y, pos.z);
+		} else {
+			// This client id is not a container in the loaded item
+			// database (quest chests are the common case: 7.7 and 8.6
+			// client ids below 5098 name different items), so RME has
+			// nowhere to hang the children. Park the whole subtree
+			// verbatim - client ids and all - so saving restores it
+			// untouched instead of silently emptying the container.
+			item->setAttribute(std::string(SEC_ATTR_PREFIX) + ATTR_PARKED_CONTENT,
+			                   sec::dumpContent(source.content));
 		}
 	}
 
@@ -235,10 +258,21 @@ bool IOMapSec::loadMap(Map& map, const FileName& identifier)
 			}
 			tile->setMapFlags(flags);
 
+			// Insert in file order. Tile::addItem re-sorts border items
+			// by the item database's top order, which regularly differs
+			// from the order CipSoft stored (25k+ tiles in the RealOTS
+			// map) and must be preserved for a faithful round-trip. The
+			// ground slot is still honoured so brushes and rendering
+			// behave; everything else keeps its position.
 			for(size_t i = 0; i < src.content.size(); ++i) {
 				Item* item = createItem(src.content[i], pos);
-				if(item) {
-					tile->addItem(item);
+				if(item == nullptr) {
+					continue;
+				}
+				if(item->isGroundTile() && tile->ground == nullptr) {
+					tile->ground = item;
+				} else {
+					tile->items.push_back(item);
 				}
 			}
 
@@ -277,12 +311,26 @@ bool IOMapSec::writeItem(const Item* item, sec::Item& out)
 	out.id = client_id;
 
 	const ItemType& type = g_items.getItemType(item->getID());
+	ItemAttributeMap attributes = item->getAttributes();
+	const std::string pool_key = std::string(SEC_ATTR_PREFIX) + ATTR_POOL_LIQUID;
+	const std::string cont_key = std::string(SEC_ATTR_PREFIX) + ATTR_CONTAINER_LIQUID;
+	const std::string parked_content_key = std::string(SEC_ATTR_PREFIX) + ATTR_PARKED_CONTENT;
+
 	if(type.stackable) {
 		out.attrs.push_back(std::make_pair(std::string(ATTR_AMOUNT), sec::fromInt(item->getCount())));
 	} else if(type.isSplash()) {
-		out.attrs.push_back(std::make_pair(std::string(ATTR_POOL_LIQUID), sec::fromInt(item->getCount())));
+		// Loaded items carry their original value parked (CipSoft liquid
+		// numbering differs from RME's) - the parked loop below writes it
+		// back verbatim. Only items newly placed in the editor reach this
+		// branch. NB: getSubtype(), never getCount() - getCount() is a
+		// constant 1 for anything non-stackable.
+		if(attributes.find(pool_key) == attributes.end() && item->getSubtype() != 0) {
+			out.attrs.push_back(std::make_pair(std::string(ATTR_POOL_LIQUID), sec::fromInt(item->getSubtype())));
+		}
 	} else if(type.isFluidContainer()) {
-		out.attrs.push_back(std::make_pair(std::string(ATTR_CONTAINER_LIQUID), sec::fromInt(item->getCount())));
+		if(attributes.find(cont_key) == attributes.end() && item->getSubtype() != 0) {
+			out.attrs.push_back(std::make_pair(std::string(ATTR_CONTAINER_LIQUID), sec::fromInt(item->getSubtype())));
+		}
 	}
 
 	const std::string text = item->getText();
@@ -291,11 +339,13 @@ bool IOMapSec::writeItem(const Item* item, sec::Item& out)
 	}
 
 	// Restore the attributes we parked on load.
-	ItemAttributeMap attributes = item->getAttributes();
 	for(ItemAttributeMap::const_iterator it = attributes.begin(); it != attributes.end(); ++it) {
 		const std::string& key = it->first;
 		if(key.compare(0, strlen(SEC_ATTR_PREFIX), SEC_ATTR_PREFIX) != 0) {
 			continue;
+		}
+		if(key == parked_content_key) {
+			continue; // not an attribute - restored as contents below
 		}
 		const std::string name = key.substr(strlen(SEC_ATTR_PREFIX));
 		const ItemAttribute& attr = it->second;
@@ -320,6 +370,22 @@ bool IOMapSec::writeItem(const Item* item, sec::Item& out)
 		}
 	}
 
+	if(out.content.empty()) {
+		// Contents parked at load time because this id is not a container
+		// in the item database: restore the subtree verbatim. The parked
+		// text already holds client ids, so no translation.
+		ItemAttributeMap::const_iterator parked = attributes.find(parked_content_key);
+		if(parked != attributes.end()) {
+			if(const std::string* blob = parked->second.getString()) {
+				if(sec::parseContent(*blob, out.content)) {
+					out.has_content = true;
+				} else {
+					warning("Could not restore parked contents of item %d", (int)client_id);
+				}
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -337,10 +403,18 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 	typedef std::map<std::string, sec::Sector> SectorMap;
 	SectorMap sectors;
 
+	// A sector is written only if it contains a tile the user modified
+	// (or its file does not exist yet). Untouched sectors keep their
+	// original bytes, which confines any load/save infidelity to the
+	// sectors actually edited.
+	std::map<std::string, bool> sector_dirty;
+
 	MapIterator it = map.begin();
 	while(it != map.end()) {
 		Tile* tile = (*it)->get();
-		if(!tile || tile->size() == 0) {
+		// NB: flags-only tiles (e.g. a bare Refresh) have size() == 0
+		// but must still be written.
+		if(!tile || (tile->size() == 0 && tile->getMapFlags() == 0)) {
 			++it;
 			continue;
 		}
@@ -387,22 +461,33 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 		out.has_content = !out.content.empty();
 
 		found->second.tiles.push_back(out);
+		sector_dirty[name] = sector_dirty[name] || tile->isModified();
 		++it;
 	}
 
 	// Tiles are stored in x-then-y order, matching the original files.
+	size_t written = 0, kept = 0;
 	for(SectorMap::iterator sector = sectors.begin(); sector != sectors.end(); ++sector) {
+		const wxString path = dir + wxFileName::GetPathSeparator() + wxString(sector->first.c_str(), wxConvUTF8);
+
+		if(!sector_dirty[sector->first] && wxFileName::FileExists(path)) {
+			++kept;
+			continue;
+		}
+
 		std::vector<sec::Tile>& tiles = sector->second.tiles;
 		std::sort(tiles.begin(), tiles.end(), [](const sec::Tile& a, const sec::Tile& b) {
 			return a.x != b.x ? a.x < b.x : a.y < b.y;
 		});
 
-		const wxString path = dir + wxFileName::GetPathSeparator() + wxString(sector->first.c_str(), wxConvUTF8);
 		if(!writeWholeFile(path, sec::dump(sector->second))) {
 			error("Could not write %s", sector->first.c_str());
 			return false;
 		}
+		++written;
 	}
+	warning("Wrote %u modified sector(s), left %u untouched sector(s) as-is",
+	        (unsigned)written, (unsigned)kept);
 
 	for(std::map<uint16_t, uint32_t>::const_iterator bad = untranslated_server_ids.begin();
 	    bad != untranslated_server_ids.end(); ++bad) {

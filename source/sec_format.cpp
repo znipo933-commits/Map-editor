@@ -282,6 +282,33 @@ namespace sec {
 		return sector;
 	}
 
+	std::string dumpContent(const std::vector<Item>& items)
+	{
+		std::string out;
+		for(size_t i = 0; i < items.size(); ++i) {
+			if(i != 0) {
+				out += ", ";
+			}
+			dumpItem(items[i], out);
+		}
+		return out;
+	}
+
+	bool parseContent(const std::string& text, std::vector<Item>& out)
+	{
+		// Reuse the grammar's own Content={...} parser by wrapping the
+		// inner text back in braces.
+		const std::string wrapped = "{" + text + "}";
+		try {
+			Cursor c(wrapped);
+			out = parseContent(c);   // the Cursor overload above
+			return true;
+		} catch(const std::exception&) {
+			out.clear();
+			return false;
+		}
+	}
+
 	std::string dump(const Sector& sector)
 	{
 		std::string out;
