@@ -47,7 +47,9 @@ _Ret_bytecap_(_Size) inline void* __CRTDECL operator new[](size_t _Size, const c
 #include "definitions.h"
 
 #include <asio.hpp>
-#include <fmt/core.h>
+// fmt 11 moved format() out of core.h into format.h; core.h now only
+// pulls in base.h, which declares the namespace but not format().
+#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
 #include <wx/wxprec.h>
