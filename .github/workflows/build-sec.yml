@@ -40,8 +40,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache vcpkg
-        uses: actions/cache@v4
+      - name: Restore vcpkg cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
           path: |
             C:/vcpkg/installed
@@ -49,6 +50,7 @@ jobs:
           key: vcpkg-${{ runner.os }}-wx-boost-v1
 
       - name: Install dependencies
+        id: deps
         shell: pwsh
         run: |
           vcpkg install `
@@ -62,11 +64,28 @@ jobs:
             zlib:x64-windows `
             freeglut:x64-windows
 
+      # Save even when a later step fails - otherwise a failed compile
+      # rebuilds wxWidgets from source on the next run, about an hour.
+      - name: Save vcpkg cache
+        if: always() && steps.deps.outcome == 'success' && steps.vcpkg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            C:/vcpkg/installed
+            C:/vcpkg/packages
+          key: vcpkg-${{ runner.os }}-wx-boost-v1
+
+      # vcpkg's exported configs (fmt, nlohmann_json) contain
+      # cmake_policy(VERSION <3.5) calls that CMake 4 rejects. They are
+      # generated third-party files, so they cannot be patched here.
+      # The env var form is documented since CMake 4.0 and, unlike -D,
+      # involves no PowerShell argument parsing.
       - name: Configure
         shell: pwsh
+        env:
+          CMAKE_POLICY_VERSION_MINIMUM: "3.5"
         run: |
           cmake -B build -A x64 `
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
             -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
             -DVCPKG_TARGET_TRIPLET=x64-windows `
             -DCMAKE_BUILD_TYPE=RelWithDebInfo
