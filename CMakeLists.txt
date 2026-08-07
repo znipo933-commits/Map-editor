@@ -9,6 +9,10 @@ endif()
 find_package(Boost 1.66.0 REQUIRED COMPONENTS date_time system filesystem iostreams)
 find_package(fmt CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
+# main.h includes <asio.hpp>, but upstream never declared the
+# dependency. The vcpkg port forces ASIO_STANDALONE, so this
+# does not pull in Boost.Asio.
+find_package(asio CONFIG REQUIRED)
 
 find_package(OpenGL REQUIRED)
 
@@ -56,4 +60,5 @@ target_link_libraries(${PROJECT_NAME}
     Boost::filesystem
     Boost::iostreams
     nlohmann_json::nlohmann_json
+    asio::asio
 )

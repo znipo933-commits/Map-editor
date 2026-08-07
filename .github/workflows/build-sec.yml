@@ -61,6 +61,7 @@ jobs:
             boost-system:x64-windows `
             boost-filesystem:x64-windows `
             boost-iostreams:x64-windows `
+            asio:x64-windows `
             fmt:x64-windows `
             nlohmann-json:x64-windows `
             zlib:x64-windows `
