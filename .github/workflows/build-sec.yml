@@ -37,6 +37,8 @@ jobs:
     name: Windows build
     needs: sec-format-test
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -92,7 +94,35 @@ jobs:
 
       - name: Build
         shell: pwsh
-        run: cmake --build build --config RelWithDebInfo --parallel
+        run: |
+          cmake --build build --config RelWithDebInfo --parallel 2>&1 |
+            Tee-Object -FilePath build.log
+          exit $LASTEXITCODE
+
+      # Job logs need repo-admin auth to download via the API, which blocks
+      # reading them from outside. Push the compile log to an orphan branch
+      # instead: raw.githubusercontent.com serves it with no auth at all.
+      - name: Publish build log
+        if: always()
+        shell: bash
+        run: |
+          [ -f build.log ] || exit 0
+          url="https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          rm -rf /tmp/logrepo
+          if git clone --depth 1 --branch ci-logs "$url" /tmp/logrepo 2>/dev/null; then
+            :
+          else
+            git clone --depth 1 "$url" /tmp/logrepo
+            git -C /tmp/logrepo checkout --orphan ci-logs
+            git -C /tmp/logrepo rm -rf . >/dev/null 2>&1 || true
+          fi
+          cp build.log "/tmp/logrepo/build-${{ github.run_id }}.log"
+          cp build.log /tmp/logrepo/latest.log
+          git -C /tmp/logrepo config user.email actions@github.com
+          git -C /tmp/logrepo config user.name "GitHub Actions"
+          git -C /tmp/logrepo add -A
+          git -C /tmp/logrepo commit -m "build log for run ${{ github.run_id }}"
+          git -C /tmp/logrepo push origin ci-logs
 
       - name: Collect artifacts
         shell: pwsh
