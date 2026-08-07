@@ -125,14 +125,28 @@ jobs:
           git -C /tmp/logrepo commit -m "build log for run ${{ github.run_id }}"
           git -C /tmp/logrepo push origin ci-logs
 
+      # The x64-windows triplet links wxWidgets, fmt, zlib and freeglut as
+      # DLLs, so shipping rme.exe alone gives "wxmsw331u_aui_vc_x64_custom.dll
+      # was not found" on any machine without vcpkg. Ship the runtime beside
+      # it: whatever VCPKG_APPLOCAL_DEPS dropped next to the exe, plus the
+      # release DLLs from the vcpkg tree as a backstop.
       - name: Collect artifacts
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Get-ChildItem -Recurse -Path build -Include rme.exe | ForEach-Object {
-            Copy-Item $_.FullName -Destination dist
-          }
+          $exe = Get-ChildItem -Recurse -Path build -Filter rme.exe |
+                 Select-Object -First 1
+          if (-not $exe) { throw "rme.exe not found under build/" }
+          Copy-Item $exe.FullName -Destination dist
+          Copy-Item (Join-Path $exe.DirectoryName '*.dll') -Destination dist `
+                    -ErrorAction SilentlyContinue
+          Copy-Item 'C:/vcpkg/installed/x64-windows/bin/*.dll' -Destination dist `
+                    -ErrorAction SilentlyContinue
           Copy-Item -Recurse -Force data dist/data
+          $dlls = @(Get-ChildItem dist -Filter *.dll)
+          Write-Host "collected $($dlls.Count) DLLs"
+          if ($dlls.Count -eq 0) { throw "no DLLs collected - rme.exe will not start" }
+          $dlls.Name | Sort-Object | ForEach-Object { Write-Host "  $_" }
           # Record exactly what went into the binary.
           "commit: ${{ github.sha }}"          | Out-File dist/BUILD_INFO.txt -Encoding utf8
           "workflow run: ${{ github.run_id }}" | Out-File dist/BUILD_INFO.txt -Append -Encoding utf8
