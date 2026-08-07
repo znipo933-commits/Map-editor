@@ -50,6 +50,18 @@ namespace {
 	// name, which the grammar restricts to [A-Za-z][A-Za-z0-9]*.
 	const char* ATTR_PARKED_CONTENT = "__Content";
 
+	// Key holding an ENTIRE item (id, attributes, contents) parked verbatim
+	// because its client id has no items.otb counterpart at all. The item
+	// is represented in the editor by a placeholder that renders as an
+	// unknown item; on save the parked text is written back untouched, so
+	// ids the loaded database has never heard of survive a load/save cycle.
+	const char* ATTR_PARKED_RAW = "__Raw";
+
+	// Server id given to those placeholders. Far above any items.otb in
+	// existence, so getItemType() returns the dummy type (bounds-checked)
+	// and Item::Create() builds a plain, inert Item for it.
+	const uint16_t PARKED_PLACEHOLDER_ID = 60000;
+
 	std::string readWholeFile(const wxString& path)
 	{
 		std::ifstream in(std::string(path.mb_str()), std::ios::binary);
@@ -126,8 +138,20 @@ Item* IOMapSec::createItem(const sec::Item& source, const Position& pos)
 {
 	const uint16_t server_id = toServerId(source.id);
 	if(server_id == 0) {
+		// No items.otb counterpart. Do NOT drop the item: park it whole
+		// (id, attributes, contents - client ids and all) on a placeholder
+		// so the save path can restore it verbatim. The placeholder can be
+		// moved or deleted in the editor like any item; editing its
+		// properties has no effect, the parked text always wins.
 		++untranslated_client_ids[source.id];
-		return nullptr;
+		Item* placeholder = Item::Create(PARKED_PLACEHOLDER_ID);
+		if(placeholder == nullptr) {
+			return nullptr;
+		}
+		std::vector<sec::Item> wrap(1, source);
+		placeholder->setAttribute(std::string(SEC_ATTR_PREFIX) + ATTR_PARKED_RAW,
+		                          sec::dumpContent(wrap));
+		return placeholder;
 	}
 
 	Item* item = Item::Create(server_id);
@@ -294,7 +318,8 @@ bool IOMapSec::loadMap(Map& map, const FileName& identifier)
 
 	for(std::map<uint16_t, uint32_t>::const_iterator it = untranslated_client_ids.begin();
 	    it != untranslated_client_ids.end(); ++it) {
-		warning("Client item id %d has no items.otb counterpart, %u occurrence(s) dropped",
+		warning("Client item id %d has no items.otb counterpart, %u occurrence(s) parked "
+		        "(preserved on save, but shown as an unknown item in the editor)",
 		        (int)it->first, it->second);
 	}
 
@@ -303,6 +328,25 @@ bool IOMapSec::loadMap(Map& map, const FileName& identifier)
 
 bool IOMapSec::writeItem(const Item* item, sec::Item& out)
 {
+	ItemAttributeMap attributes = item->getAttributes();
+
+	// An item parked whole at load time (client id unknown to items.otb):
+	// emit the original text verbatim and ignore the placeholder entirely.
+	{
+		ItemAttributeMap::const_iterator raw = attributes.find(std::string(SEC_ATTR_PREFIX) + ATTR_PARKED_RAW);
+		if(raw != attributes.end()) {
+			if(const std::string* blob = raw->second.getString()) {
+				std::vector<sec::Item> parsed;
+				if(sec::parseContent(*blob, parsed) && parsed.size() == 1) {
+					out = parsed[0];
+					return true;
+				}
+			}
+			warning("Could not restore a parked item, it will be missing from the saved map");
+			return false;
+		}
+	}
+
 	const uint16_t client_id = toClientId(item->getID());
 	if(client_id == 0) {
 		++untranslated_server_ids[item->getID()];
@@ -311,7 +355,6 @@ bool IOMapSec::writeItem(const Item* item, sec::Item& out)
 	out.id = client_id;
 
 	const ItemType& type = g_items.getItemType(item->getID());
-	ItemAttributeMap attributes = item->getAttributes();
 	const std::string pool_key = std::string(SEC_ATTR_PREFIX) + ATTR_POOL_LIQUID;
 	const std::string cont_key = std::string(SEC_ATTR_PREFIX) + ATTR_CONTAINER_LIQUID;
 	const std::string parked_content_key = std::string(SEC_ATTR_PREFIX) + ATTR_PARKED_CONTENT;

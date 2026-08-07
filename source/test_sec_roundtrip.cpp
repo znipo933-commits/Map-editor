@@ -30,11 +30,40 @@ static std::string readFile(const fs::path& p)
 	return ss.str();
 }
 
+// The editor parks an ENTIRE item (unknown client id) by serialising it as
+// a one-element content list. That wrap -> text -> wrap cycle must be an
+// identity, including exotic ids, attributes and nested contents.
+static bool parkedItemRoundTrip()
+{
+	const char* cases[] = {
+		"60123",
+		"15001 Level=5 String=\"a b, c\"",
+		"9999 Amount=64 Content={3031 Amount=100, 2853 Content={3031, 2917 Level=2}}",
+	};
+	for(size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+		std::vector<sec::Item> items;
+		if(!sec::parseContent(cases[i], items) || items.size() != 1) {
+			std::cout << "  PARKED-ITEM parse failed: " << cases[i] << "\n";
+			return false;
+		}
+		if(sec::dumpContent(items) != cases[i]) {
+			std::cout << "  PARKED-ITEM round-trip failed: " << cases[i]
+			          << " -> " << sec::dumpContent(items) << "\n";
+			return false;
+		}
+	}
+	return true;
+}
+
 int main(int argc, char** argv)
 {
 	if(argc < 2) {
 		std::cerr << "usage: test_sec_roundtrip <map-directory>\n";
 		return 2;
+	}
+
+	if(!parkedItemRoundTrip()) {
+		return 1;
 	}
 
 	std::vector<fs::path> files;
