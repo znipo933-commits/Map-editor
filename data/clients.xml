@@ -175,7 +175,7 @@
 			<data format="8.6" dat="0x4C2C7993" spr="0x4C220594"/>
 		</client>
 
-		<client name="8.60" otb="8.60" visible="true" data_directory="860">
+		<client name="8.60" otb="8.60" default="true" visible="true" data_directory="860">
 			<otbm version="3"/>
 			<!-- OTBM 4 carries the item attribute map, which is what keeps
 			     CipSoft-only data (quest numbers, key/door ids) alive across
@@ -277,7 +277,7 @@
 			<data format="10.57" dat="0x38DE" spr="0x5525213D"/>
 		</client>
 
-		<client name="10.98" otb="10.98" default="true" visible="true" data_directory="1098">
+		<client name="10.98" otb="10.98" visible="true" data_directory="1098">
 			<otbm version="3"/>
 			<extensions from="8.20 - 8.31" to="10.98"/>
 			<data format="10.57" dat="0x42A3" spr="0x57BBD603"/>

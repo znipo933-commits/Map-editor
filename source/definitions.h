@@ -105,11 +105,13 @@
 #   endif
 #endif
 
-#define MAP_LOAD_FILE_WILDCARD_OTGZ "OpenTibia Binary Map (*.otbm;*.otgz)|*.otbm;*.otgz"
-#define MAP_SAVE_FILE_WILDCARD_OTGZ "OpenTibia Binary Map (*.otbm)|*.otbm|Compressed OpenTibia Binary Map (*.otgz)|*.otgz"
+#define MAP_LOAD_FILE_WILDCARD_OTGZ "OpenTibia Binary Map (*.otbm;*.otgz)|*.otbm;*.otgz|CipSoft Sector Map (*.sec)|*.sec"
+#define MAP_SAVE_FILE_WILDCARD_OTGZ "OpenTibia Binary Map (*.otbm)|*.otbm|Compressed OpenTibia Binary Map (*.otgz)|*.otgz|CipSoft Sector Map (*.sec)|*.sec"
 
-#define MAP_LOAD_FILE_WILDCARD "OpenTibia Binary Map (*.otbm)|*.otbm"
-#define MAP_SAVE_FILE_WILDCARD "OpenTibia Binary Map (*.otbm)|*.otbm"
+// A .sec map is a directory of sectors; IOMapSec::isSecMap() accepts any
+// .sec file inside it, so picking one sector opens the whole map.
+#define MAP_LOAD_FILE_WILDCARD "OpenTibia Binary Map (*.otbm)|*.otbm|CipSoft Sector Map (*.sec)|*.sec"
+#define MAP_SAVE_FILE_WILDCARD "OpenTibia Binary Map (*.otbm)|*.otbm|CipSoft Sector Map (*.sec)|*.sec"
 
 // wxString conversions
 #define nstr(str) std::string((const char*)(str.mb_str(wxConvUTF8)))
