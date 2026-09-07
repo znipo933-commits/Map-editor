@@ -2369,6 +2369,9 @@
 			<item id="12833"/><!-- client 12574  a hole in the hull -->
 			<item id="12834"/><!-- client 12575  a purple flame -->
 			<item id="12835"/><!-- client 12580  a winterberry bush -->
+			<item id="12836"/><!-- client 12740  a cold beacon -->
+			<item id="12837"/><!-- client 12743  a cold beacon -->
+			<item id="12838"/><!-- client 12746  a cold beacon -->
 		</raw>
 	</tileset>
 
