@@ -120,6 +120,32 @@ Editor::Editor(CopyBuffer& copybuffer, const FileName& fn) :
 	*/
 
 	bool success = true;
+
+	// RME holds ONE item set at a time, so switching client version closes every
+	// open map. That is fatal to the intended workflow - an 8.x OTBM open beside
+	// the .sec world, copying between them - because the .sec branch above pins
+	// CLIENT_VERSION_860, so a source map declaring anything else takes the whole
+	// session down without asking.
+	//
+	// When maps are already open, offer to read this one through the version that
+	// is already loaded. The ids only mean the same thing if the two item sets
+	// share an id space, so this is a question and never a silent default.
+	if(g_gui.IsEditorOpen() && g_gui.IsVersionLoaded() &&
+	   g_gui.GetCurrentVersionID() != ver.client) {
+		ClientVersion* declared = ClientVersion::get(ver.client);
+		wxString msg;
+		msg << "This map declares client version "
+		    << (declared ? wxstr(declared->getName()) : wxString("(unknown)"))
+		    << ", but " << wxstr(g_gui.GetCurrentVersion().getName())
+		    << " is already loaded.\n\n"
+		    << "Yes - open it with the loaded version, keeping your other maps open.\n"
+		    << "      Only correct if the two item sets share an id space.\n\n"
+		    << "No  - switch version, which CLOSES every open map.";
+		if(g_gui.PopupDialog("Client version mismatch", msg, wxYES | wxNO) == wxID_YES) {
+			ver.client = g_gui.GetCurrentVersionID();
+		}
+	}
+
 	if(g_gui.GetCurrentVersionID() != ver.client) {
 		wxString error;
 		wxArrayString warnings;

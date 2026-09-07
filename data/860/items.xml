@@ -21795,4 +21795,181 @@
 	<item id="30028" name="swamp" />
 	<item id="30035" name="tea" />
 	<item id="30043" name="mead" />
+
+	<!-- id-split entries, generated 2026-09-07 -->
+	<item id="12661" name="swamp" />
+	<item id="12662" name="grass" />
+	<item id="12663" name="grass" />
+	<item id="12664" name="dirt floor" />
+	<item id="12665" name="dirt floor" />
+	<item id="12666" name="an empty great potion flask" />
+	<item id="12667" name="dirt floor" />
+	<item id="12668" name="dirt floor" />
+	<item id="12669" name="dirt floor" />
+	<item id="12670" name="an empty small potion flask" />
+	<item id="12671" name="a coconut palm" />
+	<item id="12672" name="sand" />
+	<item id="12673" name="an empty strong potion flask" />
+	<item id="12674" name="linen" />
+	<item id="12675" name="linen" />
+	<item id="12676" name="a piercing bolt" />
+	<item id="12677" name="rock soil" />
+	<item id="12678" name="rock soil" />
+	<item id="12679" name="rock soil" />
+	<item id="12680" name="rock soil" />
+	<item id="12681" name="a banana tree" />
+	<item id="12682" name="an elvish bow" />
+	<item id="12683" name="a banana tree" />
+	<item id="12684" name="a bamboo lamp" />
+	<item id="12685" name="rock soil" />
+	<item id="12686" name="rock soil" />
+	<item id="12687" name="rock soil" />
+	<item id="12688" name="rock soil" />
+	<item id="12689" name="grass" />
+	<item id="12690" name="wood" />
+	<item id="12691" name="grass" />
+	<item id="12692" name="rock soil" />
+	<item id="12693" name="jungle grass" />
+	<item id="12694" name="linen" />
+	<item id="12695" name="cobbled pavement" />
+	<item id="12696" name="jungle grass" />
+	<item id="12697" name="a potted flower" />
+	<item id="12698" name="rock soil" />
+	<item id="12699" name="grass" />
+	<item id="12700" name="cobbled pavement" />
+	<item id="12701" name="a bamboo lamp" />
+	<item id="12702" name="a chalk board" />
+	<item id="12703" name="a chalk board" />
+	<item id="12704" name="dirt" />
+	<item id="12705" name="a piece of paper" />
+	<item id="12706" name="a celestial map" />
+	<item id="12707" name="cobbled pavement" />
+	<item id="12708" name="an empty coal basin" />
+	<item id="12709" name="a bamboo lamp" />
+	<item id="12710" name="a celestial map" />
+	<item id="12711" name="grass" />
+	<item id="12712" name="gravel" />
+	<item id="12713" name="grass" />
+	<item id="12714" name="grass" />
+	<item id="12715" name="grass" />
+	<item id="12716" name="linen" />
+	<item id="12717" name="a buttress" />
+	<item id="12718" name="a buttress" />
+	<item id="12719" name="a chalk board" />
+	<item id="12720" name="a chalk board" />
+	<item id="12721" name="a wand of voodoo" />
+	<item id="12722" name="gravel" />
+	<item id="12723" name="grass" />
+	<item id="12724" name="grass" />
+	<item id="12725" name="a book of family histories" />
+	<item id="12726" name="a family signet ring" />
+	<item id="12727" name="a parchment" />
+	<item id="12728" name="a piece of paper" />
+	<item id="12729" name="a celestial map" />
+	<item id="12730" name="a celestial map" />
+	<item id="12731" name="shallow water" />
+	<item id="12732" name="cobbled pavement" />
+	<item id="12733" name="cobbled pavement" />
+	<item id="12734" name="cobbled pavement" />
+	<item id="12735" name="cobbled pavement" />
+	<item id="12736" name="cobbled pavement" />
+	<item id="12737" name="an underworld rod" />
+	<item id="12738" name="an item" />
+	<item id="12739" name="an item" />
+	<item id="12740" name="an item" />
+	<item id="12741" name="a cake extraction machine" />
+	<item id="12742" name="an item" />
+	<item id="12743" name="an item" />
+	<item id="12744" name="a pharaoh dummy" />
+	<item id="12745" name="a hydromancer dummy" />
+	<item id="12746" name="a mutated rat dummy" />
+	<item id="12747" name="a zombie dummy" />
+	<item id="12748" name="a nightstalker dummy" />
+	<item id="12749" name="a lost soul dummy" />
+	<item id="12750" name="a carniphila dummy" />
+	<item id="12751" name="a blightwalker dummy" />
+	<item id="12752" name="a giant cake" />
+	<item id="12753" name="an item" />
+	<item id="12754" name="an item" />
+	<item id="12755" name="a giant cake" />
+	<item id="12756" name="cake" />
+	<item id="12757" name="cake" />
+	<item id="12758" name="cake" />
+	<item id="12759" name="cake" />
+	<item id="12760" name="cake" />
+	<item id="12761" name="cake" />
+	<item id="12762" name="cake crumbs" />
+	<item id="12763" name="cake crumbs" />
+	<item id="12764" name="cake crumbs" />
+	<item id="12765" name="cake crumbs" />
+	<item id="12766" name="cake crumbs" />
+	<item id="12767" name="cake crumbs" />
+	<item id="12768" name="cake crumbs" />
+	<item id="12769" name="cake crumbs" />
+	<item id="12770" name="cake crumbs" />
+	<item id="12771" name="a giant cake" />
+	<item id="12772" name="a cake tile" />
+	<item id="12773" name="a giant cake" />
+	<item id="12774" name="a cake tile" />
+	<item id="12775" name="a giant cake" />
+	<item id="12776" name="a cake tile" />
+	<item id="12777" name="a giant cake" />
+	<item id="12778" name="the witches&#x27; cauldron" />
+	<item id="12779" name="the witches&#x27; cauldron" />
+	<item id="12780" name="the witches&#x27; cauldron" />
+	<item id="12781" name="the witches&#x27; cauldron" />
+	<item id="12782" name="the witches&#x27; cauldron" />
+	<item id="12783" name="the witches&#x27; cauldron" />
+	<item id="12784" name="the witches&#x27; cauldron" />
+	<item id="12785" name="the witches&#x27; cauldron" />
+	<item id="12786" name="the witches&#x27; cauldron" />
+	<item id="12787" name="a wood chute" />
+	<item id="12788" name="a broken wall" />
+	<item id="12789" name="pressed winterberries" />
+	<item id="12790" name="sand" />
+	<item id="12791" name="sand" />
+	<item id="12792" name="sand" />
+	<item id="12793" name="sand" />
+	<item id="12794" name="sand" />
+	<item id="12795" name="sand" />
+	<item id="12796" name="sand" />
+	<item id="12797" name="sugar" />
+	<item id="12798" name="A Piece of Cake" />
+	<item id="12799" name="pressed winterberries" />
+	<item id="12800" name="the cauldron fire" />
+	<item id="12801" name="the cauldron fire" />
+	<item id="12802" name="a closed door" />
+	<item id="12803" name="an open door" />
+	<item id="12804" name="a closed door" />
+	<item id="12805" name="an open door" />
+	<item id="12806" name="an open passthrough" />
+	<item id="12807" name="a passthrough" />
+	<item id="12808" name="stairs" />
+	<item id="12809" name="stairs" />
+	<item id="12810" name="a snow-covered tree" />
+	<item id="12811" name="a dead human" />
+	<item id="12812" name="electric sparks" />
+	<item id="12813" name="a closed door" />
+	<item id="12814" name="a blackboard" />
+	<item id="12815" name="an ore wagon" />
+	<item id="12816" name="stone floor" />
+	<item id="12817" name="a bookcase" />
+	<item id="12818" name="a bookcase" />
+	<item id="12819" name="drawers" />
+	<item id="12820" name="a stone coffin" />
+	<item id="12821" name="a pile of bones" />
+	<item id="12822" name="a small boat" />
+	<item id="12823" name="a box" />
+	<item id="12824" name="a dead tree" />
+	<item id="12825" name="an electric shower" />
+	<item id="12826" name="a charging machine" />
+	<item id="12827" name="a throne" />
+	<item id="12828" name="the energy gate" />
+	<item id="12829" name="the cake base" />
+	<item id="12830" name="the ship&#x27;s core" />
+	<item id="12831" name="a ghost duster" />
+	<item id="12832" name="an emergency kit" />
+	<item id="12833" name="a hole in the hull" />
+	<item id="12834" name="a purple flame" />
+	<item id="12835" name="a winterberry bush" />
 </items>
