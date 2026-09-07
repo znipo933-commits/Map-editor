@@ -172,6 +172,11 @@
 
 		<client name="8.60 (old)" otb="8.60 (old)" visible="false" data_directory="860">
 			<otbm version="3"/>
+			<!-- OTBM 4 here too: a .sec map pins OTBM 4 for the item attribute map
+			     (quest numbers, key/door ids). This profile shares data_directory 860
+			     with "8.60", so if a map ever loads under it the .sec world must still
+			     be able to keep its CipSoft attributes. -->
+			<otbm version="4"/>
 			<data format="8.6" dat="0x4C2C7993" spr="0x4C220594"/>
 		</client>
 
