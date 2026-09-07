@@ -183,6 +183,12 @@
 			<otbm version="4"/>
 			<extensions from="8.20 - 8.31" to="8.60"/>
 			<data format="8.6" dat="0x4C2C7993" spr="0x4C220594"/>
+			<!-- The RealOTS client: 8.6-format content that kept CipSoft's original
+			     7.7 dat signature, so it must be registered here explicitly or the
+			     8.60 profile refuses it ("could not locate dat signature"). The same
+			     pair is listed under 7.6 as format 7.55; that entry loads the stock
+			     760 data directory and is unaffected. -->
+			<data format="8.6" dat="0x439D5A33" spr="0x439852BE"/>
 			<data format="8.6" dat="0x4C6A4CBC" spr="0x4C63F145"/>
 		</client>
 
