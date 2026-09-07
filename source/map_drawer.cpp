@@ -453,6 +453,14 @@ void MapDrawer::DrawSecondaryMap(int map_z)
 				if(options.show_special_tiles && tile->getMapFlags() & TILESTATE_NOPVP) {
 					g /= 2;
 				}
+				// Refresh reads as a gold shine: these tiles are restored from
+				// origmap by the server, so what you paint here only survives if
+				// origmap is updated too.
+				if(options.show_special_tiles && tile->getMapFlags() & TILESTATE_REFRESH) {
+					r = 255;
+					g = 215;
+					b /= 4;
+				}
 				BlitItem(draw_x, draw_y, tile, tile->ground, true, r, g, b, 160);
 			}
 

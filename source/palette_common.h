@@ -211,6 +211,7 @@ public:
 	BrushButton* nopvpBrushButton;
 	BrushButton* nologBrushButton;
 	BrushButton* pvpzoneBrushButton;
+	BrushButton* refreshBrushButton;
 
 	DECLARE_EVENT_TABLE()
 };

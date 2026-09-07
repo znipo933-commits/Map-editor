@@ -410,7 +410,8 @@ BrushToolPanel::BrushToolPanel(wxWindow* parent) :
 	pzBrushButton(nullptr),
 	nopvpBrushButton(nullptr),
 	nologBrushButton(nullptr),
-	pvpzoneBrushButton(nullptr)
+	pvpzoneBrushButton(nullptr),
+	refreshBrushButton(nullptr)
 {
 	////
 }
@@ -437,7 +438,8 @@ void BrushToolPanel::InvalidateContents()
 		pzBrushButton =
 		nopvpBrushButton =
 		nologBrushButton =
-		pvpzoneBrushButton = nullptr;
+		pvpzoneBrushButton =
+		refreshBrushButton = nullptr;
 
 		loaded = false;
 	}
@@ -490,6 +492,10 @@ void BrushToolPanel::LoadAllContents()
 		ASSERT(g_gui.pvp_brush);
 		sub_sizer->Add(pvpzoneBrushButton = newd BrushButton(this, g_gui.pvp_brush, RENDER_SIZE_32x32, PALETTE_TERRAIN_PVPZONE_TOOL));
 			pvpzoneBrushButton->SetToolTip("PVP Zone Tool");
+
+		ASSERT(g_gui.refresh_brush);
+		sub_sizer->Add(refreshBrushButton = newd BrushButton(this, g_gui.refresh_brush, RENDER_SIZE_32x32, PALETTE_TERRAIN_REFRESH_TOOL));
+			refreshBrushButton->SetToolTip("Refresh Tile Tool - the server restores these from origmap");
 
 		// New row
 		size_sizer->Add(sub_sizer);
@@ -576,6 +582,10 @@ void BrushToolPanel::LoadAllContents()
 		ASSERT(g_gui.pvp_brush);
 		sub_sizer->Add(pvpzoneBrushButton = newd BrushButton(this, g_gui.pvp_brush, RENDER_SIZE_16x16, PALETTE_TERRAIN_PVPZONE_TOOL));
 			pvpzoneBrushButton->SetToolTip("PVP Zone Tool");
+
+		ASSERT(g_gui.refresh_brush);
+		sub_sizer->Add(refreshBrushButton = newd BrushButton(this, g_gui.refresh_brush, RENDER_SIZE_16x16, PALETTE_TERRAIN_REFRESH_TOOL));
+			refreshBrushButton->SetToolTip("Refresh Tile Tool - the server restores these from origmap");
 	}
 
 	size_sizer->Add(sub_sizer);

@@ -18,6 +18,7 @@
 #include "main.h"
 #include "artprovider.h"
 
+#include "../icons/refresh_zone.xpm"
 #include "../icons/circular_1.xpm"
 #include "../icons/circular_2.xpm"
 #include "../icons/circular_3.xpm"
@@ -88,6 +89,8 @@ wxBitmap ArtProvider::CreateBitmap(const wxArtID& id, const wxArtClient& client,
 			return wxBitmap(position_go_xpm);
 		else if(id == ART_PVP_BRUSH)
 			return wxBitmap(pvp_zone_xpm);
+		else if(id == ART_REFRESH_BRUSH)
+			return wxBitmap(refresh_zone_xpm);
 		else if(id == ART_PZ_BRUSH)
 			return wxBitmap(protected_zone_xpm);
 		else if(id == ART_RECTANGULAR)

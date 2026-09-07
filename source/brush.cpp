@@ -86,6 +86,9 @@ void Brushes::init()
 	addBrush(g_gui.rook_brush = newd FlagBrush(TILESTATE_NOPVP));
 	addBrush(g_gui.nolog_brush = newd FlagBrush(TILESTATE_NOLOGOUT));
 	addBrush(g_gui.pvp_brush = newd FlagBrush(TILESTATE_PVPZONE));
+	// CipSoft-only: a Refresh tile is restored from origmap by the server's
+	// sweep. OTBM cannot express it, so pasting from one silently drops it.
+	addBrush(g_gui.refresh_brush = newd FlagBrush(TILESTATE_REFRESH));
 
 	GroundBrush::init();
 	WallBrush::init();
@@ -265,6 +268,7 @@ std::string FlagBrush::getName() const
 		case TILESTATE_NOPVP: return "No combat zone brush (0x04)";
 		case TILESTATE_NOLOGOUT: return "No logout zone brush (0x08)";
 		case TILESTATE_PVPZONE: return "PVP Zone brush (0x10)";
+		case TILESTATE_REFRESH: return "Refresh tile brush (0x20)";
 	}
 	return "Unknown flag brush";
 }
@@ -276,6 +280,7 @@ int FlagBrush::getLookID() const
 		case TILESTATE_NOPVP: return EDITOR_SPRITE_NOPVP_TOOL;
 		case TILESTATE_NOLOGOUT: return EDITOR_SPRITE_NOLOG_TOOL;
 		case TILESTATE_PVPZONE: return EDITOR_SPRITE_PVPZ_TOOL;
+		case TILESTATE_REFRESH: return EDITOR_SPRITE_REFRESH_TOOL;
 	}
 	return 0;
 }

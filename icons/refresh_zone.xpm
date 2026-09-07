@@ -1,0 +1,25 @@
+/* XPM */
+static const char *refresh_zone_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"16 16 4 1 ",
+"  c None",
+"a c #B8860B",
+"b c #FFD700",
+"c c #FFF6C8",
+"                ",
+"       b        ",
+"       b        ",
+"      aba    a  ",
+"      aba   aba ",
+"     abcba   a  ",
+"    aabcbaa     ",
+"  bbbccccbbb    ",
+"  bbbccccbbb    ",
+"    aabcbaa     ",
+"     abcba      ",
+"      aba       ",
+"       b        ",
+"       b        ",
+"                ",
+"                "
+};
