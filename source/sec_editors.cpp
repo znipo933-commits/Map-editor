@@ -554,6 +554,9 @@ SecMonsterEditorDialog::SecMonsterEditorDialog(wxWindow* parent)
 
 		wxFlexGridSizer* ident = new wxFlexGridSizer(4, 6, 6);
 		race_ctrl = addSpin(basic, ident, "Race number", 0, 1, 4095);
+		// Read only: spawn rows, killtracker slots and summon spells all
+		// reference a race by this number, and none of them would follow it.
+		race_ctrl->Enable(false);
 		ident->Add(new wxStaticText(basic, wxID_ANY, "Name"), 0, wxALIGN_CENTER_VERTICAL);
 		name_ctrl = new wxTextCtrl(basic, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(180, -1));
 		ident->Add(name_ctrl);
@@ -1341,9 +1344,18 @@ SecSpawnBrowserDialog::SecSpawnBrowserDialog(wxWindow* parent)
 		secmon::SpawnRow r;
 		int sel = selectedRow();
 		if(sel >= 0) { r = SecData::get().db.rows[sel]; r.id = -1; }
-		else if(g_gui.IsEditorOpen()) {
-			// Default to the middle of the current view.
+		else {
 			r.radius = 50; r.regen = 600; r.amount = 1;
+			if(!SecData::get().monsters.empty())
+				r.race = SecData::get().monsters.begin()->first;
+			// Land it where the user is looking rather than at 0,0,0.
+			MapTab* tab = g_gui.IsEditorOpen() ? g_gui.GetCurrentMapTab() : nullptr;
+			MapCanvas* canvas = tab ? tab->GetCanvas() : nullptr;
+			if(canvas) {
+				int cx = 0, cy = 0;
+				canvas->GetScreenCenter(&cx, &cy);
+				r.x = cx; r.y = cy; r.z = g_gui.GetCurrentFloor();
+			}
 		}
 		SecSpawnRowDialog dlg(this, r, true);
 		if(dlg.ShowModal() != wxID_OK) return;
@@ -1426,11 +1438,11 @@ void SecSpawnBrowserDialog::Rebuild()
 	list->Thaw();
 	if(matched > shown.size())
 		count_label->SetLabel(wxString::Format(
-			"showing %zu of %zu matching rows (%zu in the world) - narrow the filter to see the rest",
-			shown.size(), matched, data.db.rows.size()));
+			"showing %ld of %ld matching rows (%ld in the world) - narrow the filter to see the rest",
+			(long)shown.size(), (long)matched, (long)data.db.rows.size()));
 	else
-		count_label->SetLabel(wxString::Format("%zu of %zu spawn rows",
-		                                       matched, data.db.rows.size()));
+		count_label->SetLabel(wxString::Format("%ld of %ld spawn rows",
+		                                       (long)matched, (long)data.db.rows.size()));
 }
 
 void SecSpawnBrowserDialog::OnGoto()
@@ -1742,7 +1754,7 @@ void SecRaidBrowserDialog::RebuildRaids()
 {
 	raid_list->Clear();
 	for(const SecRaid& raid : SecData::get().raids)
-		raid_list->Append(wxString::Format("%s (%zu)", wxstr(raid.file), raid.points.size()));
+		raid_list->Append(wxString::Format("%s (%ld)", wxstr(raid.file), (long)raid.points.size()));
 	if(!SecData::get().raids.empty()) {
 		raid_list->SetSelection(0);
 		current_raid = 0;
@@ -1766,7 +1778,7 @@ void SecRaidBrowserDialog::RebuildPoints()
 
 	for(size_t i = 0; i < raid.points.size(); ++i) {
 		const SecRaidPoint& pt = raid.points[i];
-		long row = point_list->InsertItem((long)i, wxString::Format("%zu", i + 1));
+		long row = point_list->InsertItem((long)i, wxString::Format("%ld", (long)(i + 1)));
 		point_list->SetItem(row, 1, wxstr(data.nameForRace(pt.race)));
 		point_list->SetItem(row, 2, wxString::Format("%d", pt.x));
 		point_list->SetItem(row, 3, wxString::Format("%d", pt.y));

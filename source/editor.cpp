@@ -20,6 +20,7 @@
 #include "iomap_sec.h"
 
 #include "editor.h"
+#include "sec_data.h"
 #include "materials.h"
 #include "map.h"
 #include "complexitem.h"
@@ -115,8 +116,16 @@ Editor::Editor(CopyBuffer& copybuffer, const FileName& fn) :
 			ver.client = CLIENT_VERSION_860;
 		}
 	} else if(!IOMapOTBM::getVersionInfo(fn, ver)) {
+		// (the monster/spawn sidecars belong to a .sec world; see below)
 		// g_gui.PopupDialog("Error", "Could not open file \"" + fn.GetFullPath() + "\".", wxOK);
 		throw std::runtime_error("Could not open file \"" + nstr(fn.GetFullPath()) + "\".\nThis is not a valid OTBM file or it does not exist.");
+	}
+
+	if(!IOMapSec::isSecMap(fn)) {
+		// monster.db, the .mon races and the NPC homes belong to a .sec world.
+		// Opening anything else must drop them, or its spawns would be drawn
+		// over an unrelated map and the Map menu would edit the wrong files.
+		SecData::get().clear();
 	}
 
 	/*
