@@ -1682,7 +1682,7 @@ SecNpcEditorDialog::SecNpcEditorDialog(wxWindow* parent)
 		}
 		wxString msg;
 		for(size_t i = 0; i < notes.GetCount(); ++i) msg << notes[i] << "\n";
-		wxMessageBox(msg.empty() ? "Nothing had changed." : msg, "Saved",
+		wxMessageBox(msg.empty() ? wxString("Nothing had changed.") : msg, "Saved",
 		             wxOK | wxICON_INFORMATION, this);
 	});
 	Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
@@ -2020,7 +2020,7 @@ SecRaidEditorDialog::SecRaidEditorDialog(wxWindow* parent)
 		}
 		wxString msg;
 		for(size_t i = 0; i < notes.GetCount(); ++i) msg << notes[i] << "\n";
-		wxMessageBox(msg.empty() ? "Nothing had changed." : msg, "Saved",
+		wxMessageBox(msg.empty() ? wxString("Nothing had changed.") : msg, "Saved",
 		             wxOK | wxICON_INFORMATION, this);
 	});
 	Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
