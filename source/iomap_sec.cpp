@@ -41,6 +41,7 @@ namespace {
 	const char* ATTR_STRING = "String";
 	const char* ATTR_POOL_LIQUID = "PoolLiquidType";
 	const char* ATTR_CONTAINER_LIQUID = "ContainerLiquidType";
+	const char* ATTR_LEVEL = "Level";
 
 	// Prefix used when parking an unmapped .sec attribute on an item.
 	const char* SEC_ATTR_PREFIX = "sec.";
@@ -414,6 +415,18 @@ bool IOMapSec::writeItem(const Item* item, sec::Item& out)
 	const std::string text = item->getText();
 	if(!text.empty()) {
 		out.attrs.push_back(std::make_pair(std::string(ATTR_STRING), sec::quote(text)));
+	}
+
+	// CipSoft has no ActionID. A level door instead carries its level in a
+	// per-tile Level= attribute, and the 8.x convention behind these maps is
+	// ActionID = 1000 + level (1020 -> level 20). Translate it so a gate of
+	// expertise pasted from an OTBM keeps its level. Every ActionID, this one
+	// included, is also listed in _actionids.txt.
+	const uint16_t action_id = item->getActionID();
+	if(type.isDoor() && action_id >= 1000 && action_id < 2000 &&
+	   attributes.find(std::string(SEC_ATTR_PREFIX) + ATTR_LEVEL) == attributes.end()) {
+		out.attrs.push_back(std::make_pair(std::string(ATTR_LEVEL),
+		                                   sec::fromInt(action_id - 1000)));
 	}
 
 	// Restore the attributes we parked on load.
