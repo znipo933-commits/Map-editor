@@ -1,0 +1,131 @@
+MSBuild version 18.9.1+a81b43525 for .NET Framework
+
+  1>Checking Build System
+  Building Custom Rule D:/a/Map-editor/Map-editor/CMakeLists.txt
+  about_window.cpp
+  action.cpp
+  actions_history_window.cpp
+  application.cpp
+  artprovider.cpp
+  basemap.cpp
+  brush.cpp
+  brush_tables.cpp
+  browse_tile_window.cpp
+  positionctrl.cpp
+  carpet_brush.cpp
+  client_version.cpp
+  common.cpp
+  common_windows.cpp
+  complexitem.cpp
+  container_properties_window.cpp
+  copybuffer.cpp
+  creature_brush.cpp
+  creature.cpp
+  creatures.cpp
+  Generating Code...
+  Compiling...
+  dat_debug_view.cpp
+  dcbutton.cpp
+  doodad_brush.cpp
+  duplicated_items_window.cpp
+  editor.cpp
+  editor_tabs.cpp
+  eraser_brush.cpp
+  extension.cpp
+  extension_window.cpp
+  find_item_window.cpp
+  filehandle.cpp
+  graphics.cpp
+  ground_brush.cpp
+  gui.cpp
+  house_brush.cpp
+  house.cpp
+  house_exit_brush.cpp
+  iomap.cpp
+  iomap_otbm.cpp
+  iomap_sec.cpp
+  Generating Code...
+  Compiling...
+  sec_format.cpp
+  iominimap.cpp
+  item_attributes.cpp
+  item.cpp
+  items.cpp
+  light_drawer.cpp
+  live_action.cpp
+  live_client.cpp
+  live_peer.cpp
+  live_server.cpp
+  live_socket.cpp
+  live_tab.cpp
+  main_menubar.cpp
+  main_toolbar.cpp
+  map.cpp
+  map_display.cpp
+  map_drawer.cpp
+  map_region.cpp
+  map_tab.cpp
+  map_window.cpp
+  Generating Code...
+  Compiling...
+  materials.cpp
+  minimap_window.cpp
+  mkpch.cpp
+  mt_rand.cpp
+  net_connection.cpp
+  numbertextctrl.cpp
+  old_properties_window.cpp
+  palette_brushlist.cpp
+  palette_common.cpp
+  palette_creature.cpp
+  palette_house.cpp
+  palette_waypoints.cpp
+  palette_window.cpp
+  pngfiles.cpp
+  preferences.cpp
+  process_com.cpp
+  properties_window.cpp
+  raw_brush.cpp
+  replace_items_window.cpp
+  result_window.cpp
+  Generating Code...
+  Compiling...
+  rme_net.cpp
+  selection.cpp
+  settings.cpp
+  spawn_brush.cpp
+  spawn.cpp
+  table_brush.cpp
+  templatemap76-74.cpp
+  templatemap81.cpp
+  templatemap854.cpp
+  templatemapclassic.cpp
+  tile.cpp
+  tileset.cpp
+  town.cpp
+  updater.cpp
+  wall_brush.cpp
+  waypoint_brush.cpp
+  waypoints.cpp
+  welcome_dialog.cpp
+  Generating Code...
+  rme.vcxproj -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\rme.exe
+  C:\vcpkg\installed\x64-windows\bin\wxmsw333u_html_vc_x64_custom.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\wxmsw333u_html_vc_x64_custom.dll done
+  C:\vcpkg\installed\x64-windows\bin\wxbase333u_vc_x64_custom.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\wxbase333u_vc_x64_custom.dll done
+  C:\vcpkg\installed\x64-windows\bin\z.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\z.dll done
+  C:\vcpkg\installed\x64-windows\bin\pcre2-16.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\pcre2-16.dll done
+  C:\vcpkg\installed\x64-windows\bin\wxmsw333u_core_vc_x64_custom.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\wxmsw333u_core_vc_x64_custom.dll done
+  C:\vcpkg\installed\x64-windows\bin\jpeg62.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\jpeg62.dll done
+  C:\vcpkg\installed\x64-windows\bin\libpng16.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\libpng16.dll done
+  C:\vcpkg\installed\x64-windows\bin\tiff.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\tiff.dll done
+  C:\vcpkg\installed\x64-windows\bin\liblzma.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\liblzma.dll done
+  C:\vcpkg\installed\x64-windows\bin\libwebpdecoder.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\libwebpdecoder.dll done
+  C:\vcpkg\installed\x64-windows\bin\libwebp.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\libwebp.dll done
+  C:\vcpkg\installed\x64-windows\bin\libsharpyuv.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\libsharpyuv.dll done
+  C:\vcpkg\installed\x64-windows\bin\libwebpdemux.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\libwebpdemux.dll done
+  C:\vcpkg\installed\x64-windows\bin\wxmsw333u_aui_vc_x64_custom.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\wxmsw333u_aui_vc_x64_custom.dll done
+  C:\vcpkg\installed\x64-windows\bin\wxmsw333u_gl_vc_x64_custom.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\wxmsw333u_gl_vc_x64_custom.dll done
+  C:\vcpkg\installed\x64-windows\bin\wxbase333u_net_vc_x64_custom.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\wxbase333u_net_vc_x64_custom.dll done
+  C:\vcpkg\installed\x64-windows\bin\freeglut.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\freeglut.dll done
+  C:\vcpkg\installed\x64-windows\bin\fmt.dll -> D:\a\Map-editor\Map-editor\build\RelWithDebInfo\fmt.dll done
+  Building Custom Rule D:/a/Map-editor/Map-editor/CMakeLists.txt
