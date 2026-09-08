@@ -553,7 +553,9 @@ void ActionQueue::addBatch(BatchAction* batch, int stacking_delay)
 		memory_size -= actions.front()->memsize();
 		delete actions.front();
 		actions.pop_front();
-		current--;
+		// current is unsigned: at 0 this would underflow to SIZE_MAX, and
+		// canUndo() would then say yes and actions.at() throw.
+		if(current > 0) current--;
 	}
 
 	if(actions.size() > size_t(g_settings.getInteger(Config::UNDO_SIZE)) && !actions.empty()) {
@@ -561,7 +563,7 @@ void ActionQueue::addBatch(BatchAction* batch, int stacking_delay)
 		BatchAction* todelete = actions.front();
 		actions.pop_front();
 		delete todelete;
-		current--;
+		if(current > 0) current--;
 	}
 
 	do {

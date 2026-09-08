@@ -578,6 +578,7 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 
 	// Tiles are stored in x-then-y order, matching the original files.
 	size_t written = 0, kept = 0;
+	size_t changed_sectors = 0, total_changed_lines = 0;
 	for(SectorMap::iterator sector = sectors.begin(); sector != sectors.end(); ++sector) {
 		const wxString path = dir + wxFileName::GetPathSeparator() + wxString(sector->first.c_str(), wxConvUTF8);
 
@@ -591,7 +592,41 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 			return a.x != b.x ? a.x < b.x : a.y < b.y;
 		});
 
-		if(!writeWholeFile(path, sec::dump(sector->second))) {
+		const std::string body = sec::dump(sector->second);
+
+		// Report what actually changed. An edit nobody meant to make - an
+		// undo that did not take, a stray brush stroke - is otherwise only
+		// found days later, by diffing against a backup.
+		if(wxFileName::FileExists(path)) {
+			const std::string before = readWholeFile(path);
+			if(before == body) {
+				++kept;
+				continue;               // dirty flag, but identical bytes
+			}
+			std::vector<std::string> old_lines, new_lines;
+			{
+				std::istringstream in(before);
+				std::string line;
+				while(std::getline(in, line)) old_lines.push_back(line);
+			}
+			{
+				std::istringstream in(body);
+				std::string line;
+				while(std::getline(in, line)) new_lines.push_back(line);
+			}
+			size_t changed = 0;
+			const size_t n = std::max(old_lines.size(), new_lines.size());
+			for(size_t i = 0; i < n; ++i) {
+				const std::string& a = i < old_lines.size() ? old_lines[i] : std::string();
+				const std::string& b = i < new_lines.size() ? new_lines[i] : std::string();
+				if(a != b) ++changed;
+			}
+			warning("%s: %u line(s) changed", wxstr(sector->first), (unsigned)changed);
+			total_changed_lines += changed;
+			++changed_sectors;
+		}
+
+		if(!writeWholeFile(path, body)) {
 			error("Could not write %s", wxstr(sector->first));
 			return false;
 		}
@@ -599,6 +634,10 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 	}
 	warning("Wrote %u modified sector(s), left %u untouched sector(s) as-is",
 	        (unsigned)written, (unsigned)kept);
+	if(changed_sectors)
+		warning("MAP CHANGES: %u tile line(s) across %u sector(s). If that is more "
+		        "than you meant to change, close without saving again and check.",
+		        (unsigned)total_changed_lines, (unsigned)changed_sectors);
 
 	{
 		const wxString extras_path = dir + wxFileName::GetPathSeparator() + wxT("_actionids.txt");

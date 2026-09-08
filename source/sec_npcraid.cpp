@@ -208,16 +208,13 @@ void SecRaid::apply() {
 			else if(k == "Message") { kv.setValue(i, "\"" + w.message + "\""); haveMessage = true; }
 			else if(k == "Count") {
 				haveCount = true;
-				kv.setValue(i, w.countMin == w.countMax
-					? itos(w.countMin)
-					: "(" + itos(w.countMin) + "," + itos(w.countMax) + ")");
+				kv.setValue(i, "(" + itos(w.countMin) + "," + itos(w.countMax) + ")");
 			}
 		}
 
 		if(!haveCount && (w.hasCount || w.countMin != 1 || w.countMax != 1))
 			additions.push_back(std::make_pair(lastField + 1, kv.makeLine("Count",
-				w.countMin == w.countMax ? itos(w.countMin)
-					: "(" + itos(w.countMin) + "," + itos(w.countMax) + ")")));
+				"(" + itos(w.countMin) + "," + itos(w.countMax) + ")")));
 		if(!haveLifetime && (w.hasLifetime || w.lifetime != 0))
 			additions.push_back(std::make_pair(lastField + 1, kv.makeLine("Lifetime", itos(w.lifetime))));
 		if(!haveMessage && (w.hasMessage || !w.message.empty()))
@@ -244,9 +241,8 @@ void SecRaid::addWave(const SecRaidPoint& wave) {
 	block.push_back(kv.makeLine("Position", formatHome(wave.x, wave.y, wave.z)));
 	block.push_back(kv.makeLine("Spread", itos(wave.spread)));
 	block.push_back(kv.makeLine("Race", itos(wave.race)));
-	block.push_back(kv.makeLine("Count", wave.countMin == wave.countMax
-		? itos(wave.countMin)
-		: "(" + itos(wave.countMin) + "," + itos(wave.countMax) + ")"));
+	block.push_back(kv.makeLine("Count",
+		"(" + itos(wave.countMin) + "," + itos(wave.countMax) + ")"));
 	if(wave.hasLifetime) block.push_back(kv.makeLine("Lifetime", itos(wave.lifetime)));
 	if(wave.hasMessage) block.push_back(kv.makeLine("Message", "\"" + wave.message + "\""));
 
