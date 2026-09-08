@@ -187,40 +187,8 @@ void SecData::loadNpcs(wxArrayString& warnings) {
 	std::vector<std::string> files = filesWithExt(wxString(npcDir.c_str(), wxConvUTF8), "*.npc");
 	for(const std::string& path : files) {
 		SecNpc npc;
-		npc.path = path;
+		if(!loadNpcFile(path, npc)) continue;   // no Home: an include, not an NPC
 		npc.file = wxFileName(wxString(path.c_str(), wxConvUTF8)).GetFullName().ToStdString();
-		npc.text = readFile(path);
-		bool haveHome = false;
-		forEachLine(npc.text, [&](const std::string& line, size_t begin, size_t end) {
-			std::string k, v;
-			if(!splitKey(line, k, v)) return;
-			if(k == "Home") {
-				if(parseTriple(v, npc.x, npc.y, npc.z)) {
-					npc.homeBegin = begin;
-					npc.homeEnd = end;
-					haveHome = true;
-				}
-			} else if(k == "Name") {
-				npc.name = trimmed(v);
-				if(npc.name.size() >= 2 && npc.name.front() == '"' && npc.name.back() == '"')
-					npc.name = npc.name.substr(1, npc.name.size() - 2);
-			} else if(k == "Radius") {
-				npc.radius = std::atoi(v.c_str());
-			} else if(k == "Race") {
-				npc.race = std::atoi(v.c_str());
-			} else if(k == "Outfit") {
-				int look = 0, h = 0, b = 0, l = 0, f = 0;
-				if(sscanf(v.c_str(), " ( %d , %d - %d - %d - %d )", &look, &h, &b, &l, &f) == 5) {
-					npc.outfit.lookType = look;
-					npc.outfit.lookHead = h; npc.outfit.lookBody = b;
-					npc.outfit.lookLegs = l; npc.outfit.lookFeet = f;
-				} else if(sscanf(v.c_str(), " ( %d , %d )", &look, &h) == 2) {
-					npc.outfit.lookType = look;
-					npc.outfit.lookItem = h;
-				}
-			}
-		});
-		if(!haveHome) continue;      // includes and fragments have no Home
 		if(npc.name.empty()) npc.name = npc.file;
 		npcs.push_back(npc);
 	}
@@ -229,57 +197,12 @@ void SecData::loadNpcs(wxArrayString& warnings) {
 	reindexNpcs();
 }
 
-// Fills type, interval and the wave list (with byte spans) from raid.text.
-static void parseRaidBody(SecRaid& raid) {
-	raid.type.clear();
-	raid.interval = 0;
-	raid.points.clear();
-
-	SecRaidPoint cur;
-	bool open = false;
-	forEachLine(raid.text, [&](const std::string& line, size_t begin, size_t end) {
-		std::string k, v;
-		if(!splitKey(line, k, v)) return;
-		if(k == "Type") { raid.type = v; return; }
-		if(k == "Interval") { raid.interval = std::atol(v.c_str()); return; }
-		if(k == "Position") {
-			// A Position line opens a new wave; flush the one before it.
-			if(open) raid.points.push_back(cur);
-			cur = SecRaidPoint();
-			open = true;
-			parseTriple(v, cur.x, cur.y, cur.z);
-			cur.posBegin = begin;
-			cur.posEnd = end;
-			return;
-		}
-		if(!open) return;
-		if(k == "Race") cur.race = std::atoi(v.c_str());
-		else if(k == "Spread") cur.spread = std::atoi(v.c_str());
-		else if(k == "Delay") cur.delay = std::atoi(v.c_str());
-		else if(k == "Lifetime") cur.lifetime = std::atoi(v.c_str());
-		else if(k == "Count") {
-			int a = 1, b = 1;
-			if(sscanf(v.c_str(), " ( %d , %d )", &a, &b) == 2) { cur.countMin = a; cur.countMax = b; }
-			else { cur.countMin = cur.countMax = std::atoi(v.c_str()); }
-		} else if(k == "Message") {
-			cur.message = v;
-			if(cur.message.size() >= 2 && cur.message.front() == '"' && cur.message.back() == '"')
-				cur.message = cur.message.substr(1, cur.message.size() - 2);
-		}
-	});
-	if(open) raid.points.push_back(cur);
-}
-
 void SecData::loadRaids(wxArrayString& warnings) {
 	std::vector<std::string> files = filesWithExt(wxString(monDir.c_str(), wxConvUTF8), "*.evt");
 	for(const std::string& path : files) {
 		SecRaid raid;
-		raid.path = path;
+		if(!loadRaidFile(path, raid)) continue;
 		raid.file = wxFileName(wxString(path.c_str(), wxConvUTF8)).GetFullName().ToStdString();
-		raid.text = readFile(path);
-		// Delay is written above Position in these files, so the first wave's
-		// Delay lands on no point. That is display only, not a parse error.
-		parseRaidBody(raid);
 		raids.push_back(raid);
 	}
 	(void)warnings;
@@ -422,48 +345,31 @@ bool SecData::save(wxArrayString& warnings, wxString& error) {
 		warnings.Add(wxString::Format("Wrote monster.db (%d spawn rows)", (int)db.rows.size()));
 	}
 
-	// --- npcs: rewrite only the Home line ---
+	// --- npcs ---
 	int npcWritten = 0;
 	for(SecNpc& npc : npcs) {
-		if(!npc.moved) continue;
-		char line[96];
-		snprintf(line, sizeof(line), "Home = [%d,%d,%d]\n", npc.x, npc.y, npc.z);
-		std::string out = npc.text.substr(0, npc.homeBegin) + line + npc.text.substr(npc.homeEnd);
-		if(!writeFile(npc.path, out)) {
-			error = wxString::Format("Could not write %s", wxString(npc.path.c_str(), wxConvUTF8));
+		if(!npc.isDirty()) continue;
+		std::string err;
+		if(!npc.kv.save(npc.path, &err)) {
+			error = wxString(err.c_str(), wxConvUTF8);
 			return false;
 		}
-		npc.text = out;
-		npc.homeEnd = npc.homeBegin + strlen(line);
+		npc.kv.originalText = npc.kv.serialize();
 		npc.moved = false;
 		++npcWritten;
 	}
-	if(npcWritten) warnings.Add(wxString::Format("Moved %d NPC home position(s)", npcWritten));
+	if(npcWritten) warnings.Add(wxString::Format("Wrote %d .npc file(s)", npcWritten));
 
-	// --- raids: rewrite only the Position lines ---
+	// --- raids ---
 	int raidWritten = 0;
 	for(SecRaid& raid : raids) {
-		if(!raid.dirty) continue;
-		// Rebuild back to front so earlier spans stay valid.
-		std::string out = raid.text;
-		std::vector<size_t> order(raid.points.size());
-		for(size_t i = 0; i < order.size(); ++i) order[i] = i;
-		std::sort(order.begin(), order.end(), [&](size_t a, size_t b) {
-			return raid.points[a].posBegin > raid.points[b].posBegin;
-		});
-		for(size_t idx : order) {
-			const SecRaidPoint& pt = raid.points[idx];
-			char line[96];
-			snprintf(line, sizeof(line), "Position  = [%d,%d,%d]\n", pt.x, pt.y, pt.z);
-			out = out.substr(0, pt.posBegin) + line + out.substr(pt.posEnd);
-		}
-		if(!writeFile(raid.path, out)) {
-			error = wxString::Format("Could not write %s", wxString(raid.path.c_str(), wxConvUTF8));
+		if(!raid.isDirty()) continue;
+		std::string err;
+		if(!raid.kv.save(raid.path, &err)) {
+			error = wxString(err.c_str(), wxConvUTF8);
 			return false;
 		}
-		raid.text = out;
-		parseRaidBody(raid);   // every span after the first edit has moved
-		raid.dirty = false;
+		raid.kv.originalText = raid.kv.serialize();
 		++raidWritten;
 	}
 	if(raidWritten) warnings.Add(wxString::Format("Wrote %d raid file(s)", raidWritten));

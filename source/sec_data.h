@@ -23,46 +23,11 @@
 #include "position.h"
 #include "sec_mon.h"
 #include "sec_monsterdb.h"
+#include "sec_npcraid.h"
 
 #include <map>
 #include <string>
 #include <vector>
-
-struct SecNpc {
-	std::string path;
-	std::string file;
-	std::string name;
-	int x = 0, y = 0, z = 0;
-	int radius = 2;
-	int race = 0;
-	Outfit outfit;
-	std::string text;              // the whole file
-	size_t homeBegin = 0;          // byte span of the "Home = [x,y,z]" line
-	size_t homeEnd = 0;
-	bool moved = false;
-};
-
-struct SecRaidPoint {
-	int race = 0;
-	int x = 0, y = 0, z = 0;
-	int spread = 0;
-	int countMin = 1, countMax = 1;
-	int delay = 0;
-	int lifetime = 0;
-	std::string message;
-	size_t posBegin = 0;           // byte span of the "Position = [x,y,z]" line
-	size_t posEnd = 0;
-};
-
-struct SecRaid {
-	std::string path;
-	std::string file;
-	std::string type;              // BigRaid or SmallRaid
-	long interval = 0;
-	std::string text;
-	std::vector<SecRaidPoint> points;
-	bool dirty = false;
-};
 
 class SecData
 {

@@ -230,33 +230,81 @@ private:
 
 // ------------------------------------------------------------- npcs / raids
 
-class SecNpcBrowserDialog : public wxDialog
+class SecNpcEditorDialog : public wxDialog
 {
 public:
-	SecNpcBrowserDialog(wxWindow* parent);
+	SecNpcEditorDialog(wxWindow* parent);
 
 private:
-	void Rebuild();
-	int selected() const;
+	void BuildList();
+	void Load(int index);
+	void Store();
+	void RefreshPreview();
+	SecNpc* current();
+
+	int current_npc = -1;
+	std::vector<size_t> shown;
 
 	wxTextCtrl* filter_ctrl;
-	wxListCtrl* list;
-	std::vector<size_t> shown;
+	wxListBox* npc_list;
+
+	wxTextCtrl* name_ctrl;
+	wxChoice* sex_ctrl;
+	wxSpinCtrl* race_ctrl;
+	wxSpinCtrl* look_ctrl;
+	wxSpinCtrl* color_ctrl[4];
+	wxCheckBox* item_check;
+	wxSpinCtrl* item_ctrl;
+	SecSpritePanel* preview;
+	wxSpinCtrl* x_ctrl;
+	wxSpinCtrl* y_ctrl;
+	wxSpinCtrl* z_ctrl;
+	wxSpinCtrl* radius_ctrl;
+	wxSpinCtrl* speed_ctrl;
+	wxTextCtrl* behaviour_ctrl;
+	wxStaticText* info_label;
 };
 
-class SecRaidBrowserDialog : public wxDialog
+// One wave of a raid.
+class SecRaidWaveDialog : public wxDialog
 {
 public:
-	SecRaidBrowserDialog(wxWindow* parent);
+	SecRaidWaveDialog(wxWindow* parent, SecRaidPoint& wave);
 
 private:
-	void RebuildRaids();
-	void RebuildPoints();
+	SecRaidPoint& wave;
+	wxSpinCtrl* delay_ctrl;
+	wxComboBox* race_ctrl;
+	wxSpinCtrl* x_ctrl;
+	wxSpinCtrl* y_ctrl;
+	wxSpinCtrl* z_ctrl;
+	wxSpinCtrl* spread_ctrl;
+	wxSpinCtrl* min_ctrl;
+	wxSpinCtrl* max_ctrl;
+	wxSpinCtrl* lifetime_ctrl;
+	wxTextCtrl* message_ctrl;
+	SecSpritePanel* preview;
+};
+
+class SecRaidEditorDialog : public wxDialog
+{
+public:
+	SecRaidEditorDialog(wxWindow* parent);
+
+private:
+	void BuildRaidList();
+	void LoadRaid(int index);
+	void StoreHeader();
+	void RefreshWaves();
+	SecRaid* current();
+
+	int current_raid = -1;
 
 	wxListBox* raid_list;
-	wxListCtrl* point_list;
-	wxStaticText* info_label;
-	int current_raid = -1;
+	wxChoice* type_ctrl;
+	wxSpinCtrl* interval_ctrl;
+	wxStaticText* interval_label;
+	wxListCtrl* wave_list;
 };
 
 #endif

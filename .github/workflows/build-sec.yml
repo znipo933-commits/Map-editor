@@ -34,6 +34,9 @@ jobs:
           g++ -std=c++17 -O2 -Wall -Wextra -Werror \
               -o test_monsterdb_roundtrip \
               source/sec_monsterdb.cpp source/sec_mon.cpp source/test_monsterdb_roundtrip.cpp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -I source \
+              -o test_npcraid_roundtrip \
+              source/sec_keyfile.cpp source/sec_npcraid.cpp source/test_npcraid_roundtrip.cpp
 
       # Point MON_DIR / MONSTER_DB at a real server tree to gate on the live
       # 448 races and 22k spawn rows instead of the fixtures.

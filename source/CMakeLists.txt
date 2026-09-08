@@ -45,6 +45,8 @@ ${CMAKE_CURRENT_LIST_DIR}/sec_format.h
 ${CMAKE_CURRENT_LIST_DIR}/sec_mon.h
 ${CMAKE_CURRENT_LIST_DIR}/sec_monsterdb.h
 ${CMAKE_CURRENT_LIST_DIR}/sec_data.h
+${CMAKE_CURRENT_LIST_DIR}/sec_keyfile.h
+${CMAKE_CURRENT_LIST_DIR}/sec_npcraid.h
 ${CMAKE_CURRENT_LIST_DIR}/sec_editors.h
 #${CMAKE_CURRENT_LIST_DIR}/iomap_otmm.h
 ${CMAKE_CURRENT_LIST_DIR}/iominimap.h
@@ -157,6 +159,8 @@ ${CMAKE_CURRENT_LIST_DIR}/sec_format.cpp
 ${CMAKE_CURRENT_LIST_DIR}/sec_mon.cpp
 ${CMAKE_CURRENT_LIST_DIR}/sec_monsterdb.cpp
 ${CMAKE_CURRENT_LIST_DIR}/sec_data.cpp
+${CMAKE_CURRENT_LIST_DIR}/sec_keyfile.cpp
+${CMAKE_CURRENT_LIST_DIR}/sec_npcraid.cpp
 ${CMAKE_CURRENT_LIST_DIR}/sec_editors.cpp
 ${CMAKE_CURRENT_LIST_DIR}/iominimap.cpp
 #${CMAKE_CURRENT_LIST_DIR}/iomap_otmm.cpp

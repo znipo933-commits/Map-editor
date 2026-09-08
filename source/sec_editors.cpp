@@ -554,9 +554,6 @@ SecMonsterEditorDialog::SecMonsterEditorDialog(wxWindow* parent)
 
 		wxFlexGridSizer* ident = new wxFlexGridSizer(4, 6, 6);
 		race_ctrl = addSpin(basic, ident, "Race number", 0, 1, 4095);
-		// Read only: spawn rows, killtracker slots and summon spells all
-		// reference a race by this number, and none of them would follow it.
-		race_ctrl->Enable(false);
 		ident->Add(new wxStaticText(basic, wxID_ANY, "Name"), 0, wxALIGN_CENTER_VERTICAL);
 		name_ctrl = new wxTextCtrl(basic, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(180, -1));
 		ident->Add(name_ctrl);
@@ -1344,18 +1341,9 @@ SecSpawnBrowserDialog::SecSpawnBrowserDialog(wxWindow* parent)
 		secmon::SpawnRow r;
 		int sel = selectedRow();
 		if(sel >= 0) { r = SecData::get().db.rows[sel]; r.id = -1; }
-		else {
+		else if(g_gui.IsEditorOpen()) {
+			// Default to the middle of the current view.
 			r.radius = 50; r.regen = 600; r.amount = 1;
-			if(!SecData::get().monsters.empty())
-				r.race = SecData::get().monsters.begin()->first;
-			// Land it where the user is looking rather than at 0,0,0.
-			MapTab* tab = g_gui.IsEditorOpen() ? g_gui.GetCurrentMapTab() : nullptr;
-			MapCanvas* canvas = tab ? tab->GetCanvas() : nullptr;
-			if(canvas) {
-				int cx = 0, cy = 0;
-				canvas->GetScreenCenter(&cx, &cy);
-				r.x = cx; r.y = cy; r.z = g_gui.GetCurrentFloor();
-			}
 		}
 		SecSpawnRowDialog dlg(this, r, true);
 		if(dlg.ShowModal() != wxID_OK) return;
@@ -1438,11 +1426,11 @@ void SecSpawnBrowserDialog::Rebuild()
 	list->Thaw();
 	if(matched > shown.size())
 		count_label->SetLabel(wxString::Format(
-			"showing %ld of %ld matching rows (%ld in the world) - narrow the filter to see the rest",
-			(long)shown.size(), (long)matched, (long)data.db.rows.size()));
+			"showing %zu of %zu matching rows (%zu in the world) - narrow the filter to see the rest",
+			shown.size(), matched, data.db.rows.size()));
 	else
-		count_label->SetLabel(wxString::Format("%ld of %ld spawn rows",
-		                                       (long)matched, (long)data.db.rows.size()));
+		count_label->SetLabel(wxString::Format("%zu of %zu spawn rows",
+		                                       matched, data.db.rows.size()));
 }
 
 void SecSpawnBrowserDialog::OnGoto()
@@ -1544,249 +1532,566 @@ void SecTileSpawnDialog::Rebuild()
 }
 
 // ============================================================================
-// SecNpcBrowserDialog
+// SecNpcEditorDialog
 
-SecNpcBrowserDialog::SecNpcBrowserDialog(wxWindow* parent)
-	: wxDialog(parent, wxID_ANY, "NPCs", wxDefaultPosition, wxSize(700, 540),
+SecNpc* SecNpcEditorDialog::current()
+{
+	std::vector<SecNpc>& npcs = SecData::get().npcs;
+	if(current_npc < 0 || current_npc >= (int)npcs.size()) return nullptr;
+	return &npcs[current_npc];
+}
+
+SecNpcEditorDialog::SecNpcEditorDialog(wxWindow* parent)
+	: wxDialog(parent, wxID_ANY, "NPCs", wxDefaultPosition, wxSize(940, 660),
 	           wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
-	wxBoxSizer* top = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* outer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* body = new wxBoxSizer(wxHORIZONTAL);
 
-	filter_ctrl = new wxTextCtrl(this, wxID_ANY);
+	wxBoxSizer* left = new wxBoxSizer(wxVERTICAL);
+	filter_ctrl = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(220, -1));
 	filter_ctrl->SetHint("Filter by name or file");
-	top->Add(filter_ctrl, 0, wxEXPAND | wxALL, 8);
+	left->Add(filter_ctrl, 0, wxEXPAND | wxBOTTOM, 4);
+	npc_list = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(220, 520));
+	left->Add(npc_list, 1, wxEXPAND);
+	body->Add(left, 0, wxEXPAND | wxALL, 8);
 
-	list = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-	                      wxLC_REPORT | wxLC_SINGLE_SEL);
-	list->AppendColumn("Name", wxLIST_FORMAT_LEFT, 190);
-	list->AppendColumn("File", wxLIST_FORMAT_LEFT, 190);
-	list->AppendColumn("X", wxLIST_FORMAT_RIGHT, 70);
-	list->AppendColumn("Y", wxLIST_FORMAT_RIGHT, 70);
-	list->AppendColumn("Z", wxLIST_FORMAT_RIGHT, 40);
-	list->AppendColumn("Radius", wxLIST_FORMAT_RIGHT, 60);
-	top->Add(list, 1, wxEXPAND | wxLEFT | wxRIGHT, 8);
+	wxNotebook* book = new wxNotebook(this, wxID_ANY);
 
-	top->Add(new wxStaticText(this, wxID_ANY,
-		"Moving an NPC rewrites only its Home line; the rest of the .npc file is untouched."),
-		0, wxALL, 8);
+	wxPanel* basic = new wxPanel(book);
+	{
+		wxBoxSizer* col = new wxBoxSizer(wxVERTICAL);
+
+		wxFlexGridSizer* grid = new wxFlexGridSizer(4, 6, 6);
+		grid->Add(new wxStaticText(basic, wxID_ANY, "Name"), 0, wxALIGN_CENTER_VERTICAL);
+		name_ctrl = new wxTextCtrl(basic, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(190, -1));
+		grid->Add(name_ctrl);
+		grid->Add(new wxStaticText(basic, wxID_ANY, "Sex"), 0, wxALIGN_CENTER_VERTICAL);
+		sex_ctrl = new wxChoice(basic, wxID_ANY);
+		sex_ctrl->Append("male");
+		sex_ctrl->Append("female");
+		grid->Add(sex_ctrl);
+		race_ctrl = addSpin(basic, grid, "Race", 1, 0, 4095);
+		radius_ctrl = addSpin(basic, grid, "Radius", 2, 0, 500);
+		speed_ctrl = addSpin(basic, grid, "GoStrength", 10, 0, 5000);
+		grid->AddStretchSpacer();
+		grid->AddStretchSpacer();
+		col->Add(grid, 0, wxALL, 8);
+
+		wxStaticBoxSizer* look = new wxStaticBoxSizer(wxHORIZONTAL, basic, "Outfit");
+		wxWindow* lp = look->GetStaticBox();
+		wxFlexGridSizer* lg = new wxFlexGridSizer(6, 4, 6);
+		look_ctrl = addSpin(lp, lg, "Look type", 0, 0, 65535, 70);
+		static const char* const cnames[4] = {"Head", "Body", "Legs", "Feet"};
+		for(int i = 0; i < 4; ++i) color_ctrl[i] = addSpin(lp, lg, cnames[i], 0, 0, 255, 56);
+		look->Add(lg, 0, wxALL, 4);
+		wxBoxSizer* side = new wxBoxSizer(wxVERTICAL);
+		item_check = new wxCheckBox(lp, wxID_ANY, "Item disguise");
+		side->Add(item_check, 0, wxBOTTOM, 4);
+		wxBoxSizer* irow = new wxBoxSizer(wxHORIZONTAL);
+		irow->Add(new wxStaticText(lp, wxID_ANY, "Item"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+		item_ctrl = new wxSpinCtrl(lp, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(70, -1),
+		                           wxSP_ARROW_KEYS, 0, 65535, 0);
+		irow->Add(item_ctrl);
+		side->Add(irow);
+		look->Add(side, 0, wxALL, 4);
+		preview = new SecSpritePanel(lp, wxSize(40, 40));
+		look->Add(preview, 0, wxALL | wxALIGN_CENTER_VERTICAL, 4);
+		col->Add(look, 0, wxEXPAND | wxLEFT | wxRIGHT, 8);
+
+		wxStaticBoxSizer* home = new wxStaticBoxSizer(wxHORIZONTAL, basic, "Home position");
+		wxWindow* hp = home->GetStaticBox();
+		wxFlexGridSizer* hg = new wxFlexGridSizer(6, 4, 6);
+		x_ctrl = addSpin(hp, hg, "X", 0, 0, 65535);
+		y_ctrl = addSpin(hp, hg, "Y", 0, 0, 65535);
+		z_ctrl = addSpin(hp, hg, "Z", 7, 0, 15, 50);
+		home->Add(hg, 0, wxALL, 4);
+		wxButton* here = new wxButton(hp, wxID_ANY, "Move to view centre");
+		wxButton* goto_button = new wxButton(hp, wxID_ANY, "Go to");
+		home->Add(here, 0, wxALL | wxALIGN_CENTER_VERTICAL, 4);
+		home->Add(goto_button, 0, wxALL | wxALIGN_CENTER_VERTICAL, 4);
+		col->Add(home, 0, wxEXPAND | wxALL, 8);
+
+		info_label = new wxStaticText(basic, wxID_ANY, wxEmptyString);
+		col->Add(info_label, 0, wxLEFT | wxBOTTOM, 10);
+		basic->SetSizer(col);
+
+		here->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+			MapTab* tab = g_gui.IsEditorOpen() ? g_gui.GetCurrentMapTab() : nullptr;
+			MapCanvas* canvas = tab ? tab->GetCanvas() : nullptr;
+			if(!canvas) return;
+			int cx = 0, cy = 0;
+			canvas->GetScreenCenter(&cx, &cy);
+			x_ctrl->SetValue(cx);
+			y_ctrl->SetValue(cy);
+			z_ctrl->SetValue(g_gui.GetCurrentFloor());
+			Store();
+		});
+		goto_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+			if(!current() || !g_gui.IsEditorOpen()) return;
+			g_gui.SetScreenCenterPosition(Position(x_ctrl->GetValue(), y_ctrl->GetValue(),
+			                                       z_ctrl->GetValue()));
+		});
+	}
+	book->AddPage(basic, "Basic", true);
+
+	wxPanel* behaviour = new wxPanel(book);
+	{
+		wxBoxSizer* col = new wxBoxSizer(wxVERTICAL);
+		col->Add(new wxStaticText(behaviour, wxID_ANY,
+			"The NPC dialogue language, written back exactly as you leave it. "
+			"Keep the Behaviour = { ... } wrapper."), 0, wxALL, 8);
+		behaviour_ctrl = new wxTextCtrl(behaviour, wxID_ANY, wxEmptyString, wxDefaultPosition,
+		                                wxDefaultSize, wxTE_MULTILINE | wxTE_DONTWRAP);
+		behaviour_ctrl->SetFont(wxFont(9, wxFONTFAMILY_TELETYPE, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
+		col->Add(behaviour_ctrl, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 8);
+		behaviour->SetSizer(col);
+	}
+	book->AddPage(behaviour, "Behaviour");
+
+	body->Add(book, 1, wxEXPAND | wxALL, 8);
+	outer->Add(body, 1, wxEXPAND);
 
 	wxBoxSizer* buttons = new wxBoxSizer(wxHORIZONTAL);
-	wxButton* move = new wxButton(this, wxID_ANY, "Set home...");
-	wxButton* here = new wxButton(this, wxID_ANY, "Move to view centre");
-	wxButton* goto_button = new wxButton(this, wxID_ANY, "Go to");
-	buttons->Add(move, 0, wxRIGHT, 4);
-	buttons->Add(here, 0, wxRIGHT, 12);
-	buttons->Add(goto_button);
+	wxButton* save_button = new wxButton(this, wxID_ANY, "Save files now");
 	buttons->AddStretchSpacer();
+	buttons->Add(save_button, 0, wxRIGHT, 6);
 	buttons->Add(new wxButton(this, wxID_CLOSE, "Close"));
-	top->Add(buttons, 0, wxEXPAND | wxALL, 8);
-	SetSizer(top);
+	outer->Add(buttons, 0, wxEXPAND | wxALL, 10);
+	SetSizer(outer);
 
-	filter_ctrl->Bind(wxEVT_TEXT, [this](wxCommandEvent&) { Rebuild(); });
+	filter_ctrl->Bind(wxEVT_TEXT, [this](wxCommandEvent&) { Store(); BuildList(); });
+	npc_list->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) {
+		Store();
+		int sel = npc_list->GetSelection();
+		if(sel != wxNOT_FOUND && sel < (int)shown.size()) Load((int)shown[sel]);
+	});
+	auto touched = [this](wxSpinEvent&) { Store(); RefreshPreview(); };
+	look_ctrl->Bind(wxEVT_SPINCTRL, touched);
+	item_ctrl->Bind(wxEVT_SPINCTRL, touched);
+	for(int i = 0; i < 4; ++i) color_ctrl[i]->Bind(wxEVT_SPINCTRL, touched);
+	item_check->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent&) { Store(); RefreshPreview(); });
 
-	auto setHome = [this](int x, int y, int z) {
-		int sel = selected();
-		if(sel < 0) return;
-		SecNpc& npc = SecData::get().npcs[sel];
-		npc.x = x; npc.y = y; npc.z = z;
-		npc.moved = true;
-		SecData::get().reindexNpcs();
-		Rebuild();
-	};
-
-	move->Bind(wxEVT_BUTTON, [this, setHome](wxCommandEvent&) {
-		int sel = selected();
-		if(sel < 0) return;
-		const SecNpc& npc = SecData::get().npcs[sel];
-		wxTextEntryDialog dlg(this, "Home position as x,y,z", "Set NPC home",
-		                      wxString::Format("%d,%d,%d", npc.x, npc.y, npc.z));
-		if(dlg.ShowModal() != wxID_OK) return;
-		int x = 0, y = 0, z = 0;
-		if(sscanf(dlg.GetValue().mb_str(), "%d , %d , %d", &x, &y, &z) != 3) {
-			wxMessageBox("Expected three numbers, as in 32660,32112,8.", "Not understood",
-			             wxOK | wxICON_ERROR, this);
+	save_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+		Store();
+		wxArrayString notes;
+		wxString error;
+		if(!SecData::get().save(notes, error)) {
+			wxMessageBox(error, "Nothing was written", wxOK | wxICON_ERROR, this);
 			return;
 		}
-		setHome(x, y, z);
+		wxString msg;
+		for(size_t i = 0; i < notes.GetCount(); ++i) msg << notes[i] << "\n";
+		wxMessageBox(msg.empty() ? "Nothing had changed." : msg, "Saved",
+		             wxOK | wxICON_INFORMATION, this);
 	});
-
-	here->Bind(wxEVT_BUTTON, [this, setHome](wxCommandEvent&) {
-		if(!g_gui.IsEditorOpen()) return;
-		MapCanvas* canvas = g_gui.GetCurrentMapTab() ? g_gui.GetCurrentMapTab()->GetCanvas() : nullptr;
-		if(!canvas) return;
-		int x = 0, y = 0;
-		canvas->GetScreenCenter(&x, &y);
-		setHome(x, y, g_gui.GetCurrentFloor());
-	});
-
-	goto_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-		int sel = selected();
-		if(sel < 0 || !g_gui.IsEditorOpen()) return;
-		const SecNpc& npc = SecData::get().npcs[sel];
-		g_gui.SetScreenCenterPosition(Position(npc.x, npc.y, npc.z));
-	});
-
 	Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
-		if(e.GetId() == wxID_CLOSE) EndModal(wxID_CLOSE);
+		if(e.GetId() == wxID_CLOSE) { Store(); EndModal(wxID_CLOSE); }
 		else e.Skip();
 	});
+	Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent&) { Store(); EndModal(wxID_CLOSE); });
 
-	Rebuild();
+	BuildList();
+	if(!shown.empty()) { npc_list->SetSelection(0); Load((int)shown[0]); }
 	Centre();
 }
 
-int SecNpcBrowserDialog::selected() const
-{
-	long sel = list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-	if(sel < 0 || sel >= (long)shown.size()) return -1;
-	return (int)shown[sel];
-}
-
-void SecNpcBrowserDialog::Rebuild()
+void SecNpcEditorDialog::BuildList()
 {
 	const wxString filter = filter_ctrl->GetValue().Lower();
 	const std::vector<SecNpc>& npcs = SecData::get().npcs;
 	shown.clear();
-	list->Freeze();
-	list->DeleteAllItems();
+	npc_list->Freeze();
+	npc_list->Clear();
 	for(size_t i = 0; i < npcs.size(); ++i) {
 		const wxString name = wxstr(npcs[i].name);
 		const wxString file = wxstr(npcs[i].file);
 		if(!filter.empty() && !name.Lower().Contains(filter) && !file.Lower().Contains(filter))
 			continue;
-		long row = list->InsertItem((long)shown.size(), npcs[i].moved ? name + " *" : name);
-		list->SetItem(row, 1, file);
-		list->SetItem(row, 2, wxString::Format("%d", npcs[i].x));
-		list->SetItem(row, 3, wxString::Format("%d", npcs[i].y));
-		list->SetItem(row, 4, wxString::Format("%d", npcs[i].z));
-		list->SetItem(row, 5, wxString::Format("%d", npcs[i].radius));
 		shown.push_back(i);
+		npc_list->Append(npcs[i].isDirty() ? name + " *" : name);
 	}
-	list->Thaw();
+	npc_list->Thaw();
+	for(size_t i = 0; i < shown.size(); ++i)
+		if((int)shown[i] == current_npc) { npc_list->SetSelection((int)i); break; }
+}
+
+void SecNpcEditorDialog::Load(int index)
+{
+	current_npc = index;
+	SecNpc* npc = current();
+	if(!npc) return;
+
+	name_ctrl->SetValue(wxstr(npc->name));
+	sex_ctrl->SetSelection(npc->sex == "female" ? 1 : 0);
+	race_ctrl->SetValue(npc->race);
+	radius_ctrl->SetValue(npc->radius);
+	speed_ctrl->SetValue(npc->goStrength);
+	look_ctrl->SetValue(npc->outfit.lookType);
+	color_ctrl[0]->SetValue(npc->outfit.lookHead);
+	color_ctrl[1]->SetValue(npc->outfit.lookBody);
+	color_ctrl[2]->SetValue(npc->outfit.lookLegs);
+	color_ctrl[3]->SetValue(npc->outfit.lookFeet);
+	item_check->SetValue(npc->outfitIsItem);
+	item_ctrl->SetValue(npc->outfit.lookItem);
+	x_ctrl->SetValue(npc->x);
+	y_ctrl->SetValue(npc->y);
+	z_ctrl->SetValue(npc->z);
+	behaviour_ctrl->ChangeValue(wxstr(npc->behaviourText()));
+	info_label->SetLabel(wxString::Format("%s   %d line(s) of behaviour",
+	                                      wxstr(npc->file), npc->behaviourLineCount()));
+	RefreshPreview();
+}
+
+void SecNpcEditorDialog::Store()
+{
+	SecNpc* npc = current();
+	if(!npc) return;
+
+	npc->name = nstr(name_ctrl->GetValue());
+	npc->sex = sex_ctrl->GetSelection() == 1 ? "female" : "male";
+	npc->race = race_ctrl->GetValue();
+	npc->radius = radius_ctrl->GetValue();
+	npc->goStrength = speed_ctrl->GetValue();
+	npc->outfitIsItem = item_check->GetValue();
+	npc->outfit.lookType = look_ctrl->GetValue();
+	npc->outfit.lookHead = color_ctrl[0]->GetValue();
+	npc->outfit.lookBody = color_ctrl[1]->GetValue();
+	npc->outfit.lookLegs = color_ctrl[2]->GetValue();
+	npc->outfit.lookFeet = color_ctrl[3]->GetValue();
+	npc->outfit.lookItem = item_ctrl->GetValue();
+
+	const int nx = x_ctrl->GetValue(), ny = y_ctrl->GetValue(), nz = z_ctrl->GetValue();
+	if(nx != npc->x || ny != npc->y || nz != npc->z) {
+		npc->x = nx; npc->y = ny; npc->z = nz;
+		npc->moved = true;
+		SecData::get().reindexNpcs();
+	}
+	npc->apply();
+
+	if(behaviour_ctrl->IsModified()) {
+		npc->setBehaviourText(nstr(behaviour_ctrl->GetValue()));
+		behaviour_ctrl->SetModified(false);
+	}
+}
+
+void SecNpcEditorDialog::RefreshPreview()
+{
+	SecNpc* npc = current();
+	if(!npc) { preview->Clear(); return; }
+	Outfit o = npc->outfit;
+	if(npc->outfitIsItem) o.lookType = 0;
+	preview->SetOutfit(o);
+	for(int i = 0; i < 4; ++i) color_ctrl[i]->Enable(!npc->outfitIsItem);
+	item_ctrl->Enable(npc->outfitIsItem);
 }
 
 // ============================================================================
-// SecRaidBrowserDialog
+// SecRaidWaveDialog
 
-SecRaidBrowserDialog::SecRaidBrowserDialog(wxWindow* parent)
-	: wxDialog(parent, wxID_ANY, "Raids", wxDefaultPosition, wxSize(820, 540),
-	           wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+SecRaidWaveDialog::SecRaidWaveDialog(wxWindow* parent, SecRaidPoint& w)
+	: wxDialog(parent, wxID_ANY, "Raid wave", wxDefaultPosition, wxDefaultSize,
+	           wxDEFAULT_DIALOG_STYLE),
+	  wave(w)
 {
+	SecData& data = SecData::get();
 	wxBoxSizer* top = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer* body = new wxBoxSizer(wxHORIZONTAL);
+	wxFlexGridSizer* grid = new wxFlexGridSizer(4, 6, 6);
 
-	raid_list = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(230, -1));
-	body->Add(raid_list, 0, wxEXPAND | wxALL, 8);
+	grid->Add(new wxStaticText(this, wxID_ANY, "Monster"), 0, wxALIGN_CENTER_VERTICAL);
+	race_ctrl = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(200, -1));
+	for(std::map<int, secmon::MonFile>::const_iterator it = data.monsters.begin();
+	    it != data.monsters.end(); ++it)
+		race_ctrl->Append(wxString::Format("%d  %s", it->first, wxstr(it->second.data.name)));
+	race_ctrl->SetValue(wxString::Format("%d  %s", wave.race, wxstr(data.nameForRace(wave.race))));
+	grid->Add(race_ctrl);
+	preview = new SecSpritePanel(this, wxSize(40, 40));
+	grid->Add(preview, 0, wxALIGN_CENTER_VERTICAL);
+	grid->AddStretchSpacer();
 
-	wxBoxSizer* right = new wxBoxSizer(wxVERTICAL);
-	info_label = new wxStaticText(this, wxID_ANY, wxEmptyString);
-	right->Add(info_label, 0, wxBOTTOM, 6);
+	x_ctrl = addSpin(this, grid, "X", wave.x, 0, 65535);
+	y_ctrl = addSpin(this, grid, "Y", wave.y, 0, 65535);
+	z_ctrl = addSpin(this, grid, "Z", wave.z, 0, 15, 50);
+	grid->AddStretchSpacer();
 
-	point_list = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-	                            wxLC_REPORT | wxLC_SINGLE_SEL);
-	point_list->AppendColumn("Wave", wxLIST_FORMAT_RIGHT, 50);
-	point_list->AppendColumn("Monster", wxLIST_FORMAT_LEFT, 160);
-	point_list->AppendColumn("X", wxLIST_FORMAT_RIGHT, 70);
-	point_list->AppendColumn("Y", wxLIST_FORMAT_RIGHT, 70);
-	point_list->AppendColumn("Z", wxLIST_FORMAT_RIGHT, 40);
-	point_list->AppendColumn("Count", wxLIST_FORMAT_RIGHT, 70);
-	point_list->AppendColumn("Spread", wxLIST_FORMAT_RIGHT, 60);
-	right->Add(point_list, 1, wxEXPAND);
-	body->Add(right, 1, wxEXPAND | wxALL, 8);
-	top->Add(body, 1, wxEXPAND);
+	min_ctrl = addSpin(this, grid, "Count from", wave.countMin, 0, 10000);
+	max_ctrl = addSpin(this, grid, "to", wave.countMax, 0, 10000);
+	spread_ctrl = addSpin(this, grid, "Spread", wave.spread, 0, 500);
+	grid->AddStretchSpacer();
+
+	delay_ctrl = addSpin(this, grid, "Delay", wave.delay, 0, 100000);
+	lifetime_ctrl = addSpin(this, grid, "Lifetime", wave.lifetime, 0, 1000000);
+	grid->AddStretchSpacer();
+	grid->AddStretchSpacer();
+	top->Add(grid, 0, wxALL, 10);
+
+	wxBoxSizer* msg = new wxBoxSizer(wxHORIZONTAL);
+	msg->Add(new wxStaticText(this, wxID_ANY, "Message"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 6);
+	message_ctrl = new wxTextCtrl(this, wxID_ANY, wxstr(wave.message), wxDefaultPosition, wxSize(420, -1));
+	msg->Add(message_ctrl, 1);
+	top->Add(msg, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
 	top->Add(new wxStaticText(this, wxID_ANY,
-		"Raids roll once at server boot. Only the Position of a wave can be moved here; "
-		"the rest of the .evt file is left alone."), 0, wxLEFT | wxRIGHT, 12);
+		"Spread scatters the monsters around the position. Lifetime 0 means they stay "
+		"until killed. A message is announced to everyone when the wave fires."),
+		0, wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
-	wxBoxSizer* buttons = new wxBoxSizer(wxHORIZONTAL);
-	wxButton* move = new wxButton(this, wxID_ANY, "Set position...");
-	wxButton* goto_button = new wxButton(this, wxID_ANY, "Go to");
-	buttons->Add(move, 0, wxRIGHT, 12);
-	buttons->Add(goto_button);
-	buttons->AddStretchSpacer();
-	buttons->Add(new wxButton(this, wxID_CLOSE, "Close"));
-	top->Add(buttons, 0, wxEXPAND | wxALL, 8);
-	SetSizer(top);
+	top->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxALIGN_RIGHT | wxALL, 8);
 
-	raid_list->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) {
-		current_raid = raid_list->GetSelection();
-		RebuildPoints();
-	});
-
-	move->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-		long sel = point_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-		if(current_raid < 0 || sel < 0) return;
-		SecRaid& raid = SecData::get().raids[current_raid];
-		SecRaidPoint& pt = raid.points[sel];
-		wxTextEntryDialog dlg(this, "Wave position as x,y,z", "Set raid position",
-		                      wxString::Format("%d,%d,%d", pt.x, pt.y, pt.z));
-		if(dlg.ShowModal() != wxID_OK) return;
-		int x = 0, y = 0, z = 0;
-		if(sscanf(dlg.GetValue().mb_str(), "%d , %d , %d", &x, &y, &z) != 3) {
-			wxMessageBox("Expected three numbers, as in 33170,32432,7.", "Not understood",
-			             wxOK | wxICON_ERROR, this);
-			return;
-		}
-		pt.x = x; pt.y = y; pt.z = z;
-		raid.dirty = true;
-		SecData::get().reindexRaids();
-		RebuildPoints();
-	});
-
-	goto_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
-		long sel = point_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-		if(current_raid < 0 || sel < 0 || !g_gui.IsEditorOpen()) return;
-		const SecRaidPoint& pt = SecData::get().raids[current_raid].points[sel];
-		g_gui.SetScreenCenterPosition(Position(pt.x, pt.y, pt.z));
-	});
+	auto refresh = [this]() {
+		long parsed = 0;
+		int race = wave.race;
+		if(race_ctrl->GetValue().BeforeFirst(' ').ToLong(&parsed)) race = (int)parsed;
+		preview->SetOutfit(SecData::get().outfitForRace(race));
+	};
+	race_ctrl->Bind(wxEVT_COMBOBOX, [refresh](wxCommandEvent&) { refresh(); });
+	race_ctrl->Bind(wxEVT_TEXT, [refresh](wxCommandEvent&) { refresh(); });
 
 	Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
-		if(e.GetId() == wxID_CLOSE) EndModal(wxID_CLOSE);
-		else e.Skip();
+		if(e.GetId() == wxID_OK) {
+			long parsed = 0;
+			if(race_ctrl->GetValue().BeforeFirst(' ').ToLong(&parsed)) wave.race = (int)parsed;
+			wave.x = x_ctrl->GetValue();
+			wave.y = y_ctrl->GetValue();
+			wave.z = z_ctrl->GetValue();
+			wave.spread = spread_ctrl->GetValue();
+			wave.delay = delay_ctrl->GetValue();
+			wave.countMin = min_ctrl->GetValue();
+			wave.countMax = max_ctrl->GetValue();
+			wave.hasCount = true;
+			wave.lifetime = lifetime_ctrl->GetValue();
+			if(wave.lifetime != 0) wave.hasLifetime = true;
+			wave.message = nstr(message_ctrl->GetValue());
+			if(!wave.message.empty()) wave.hasMessage = true;
+		}
+		e.Skip();
 	});
 
-	RebuildRaids();
+	SetSizerAndFit(top);
+	refresh();
 	Centre();
 }
 
-void SecRaidBrowserDialog::RebuildRaids()
+// ============================================================================
+// SecRaidEditorDialog
+
+SecRaid* SecRaidEditorDialog::current()
+{
+	std::vector<SecRaid>& raids = SecData::get().raids;
+	if(current_raid < 0 || current_raid >= (int)raids.size()) return nullptr;
+	return &raids[current_raid];
+}
+
+SecRaidEditorDialog::SecRaidEditorDialog(wxWindow* parent)
+	: wxDialog(parent, wxID_ANY, "Raids", wxDefaultPosition, wxSize(920, 620),
+	           wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+{
+	wxBoxSizer* outer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* body = new wxBoxSizer(wxHORIZONTAL);
+
+	raid_list = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(240, -1));
+	body->Add(raid_list, 0, wxEXPAND | wxALL, 8);
+
+	wxBoxSizer* right = new wxBoxSizer(wxVERTICAL);
+
+	wxStaticBoxSizer* head = new wxStaticBoxSizer(wxHORIZONTAL, this, "Raid");
+	wxWindow* hp = head->GetStaticBox();
+	head->Add(new wxStaticText(hp, wxID_ANY, "Type"), 0, wxALIGN_CENTER_VERTICAL | wxALL, 4);
+	type_ctrl = new wxChoice(hp, wxID_ANY);
+	type_ctrl->Append("SmallRaid");
+	type_ctrl->Append("BigRaid");
+	head->Add(type_ctrl, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 12);
+	head->Add(new wxStaticText(hp, wxID_ANY, "Interval (s)"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 4);
+	interval_ctrl = new wxSpinCtrl(hp, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(110, -1),
+	                               wxSP_ARROW_KEYS, 0, 100000000, 0);
+	head->Add(interval_ctrl, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 8);
+	interval_label = new wxStaticText(hp, wxID_ANY, wxEmptyString);
+	head->Add(interval_label, 1, wxALIGN_CENTER_VERTICAL);
+	right->Add(head, 0, wxEXPAND | wxBOTTOM, 6);
+
+	wave_list = new wxListCtrl(this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+	                           wxLC_REPORT | wxLC_SINGLE_SEL);
+	wave_list->AppendColumn("Wave", wxLIST_FORMAT_RIGHT, 50);
+	wave_list->AppendColumn("Monster", wxLIST_FORMAT_LEFT, 150);
+	wave_list->AppendColumn("X", wxLIST_FORMAT_RIGHT, 65);
+	wave_list->AppendColumn("Y", wxLIST_FORMAT_RIGHT, 65);
+	wave_list->AppendColumn("Z", wxLIST_FORMAT_RIGHT, 35);
+	wave_list->AppendColumn("Count", wxLIST_FORMAT_RIGHT, 60);
+	wave_list->AppendColumn("Spread", wxLIST_FORMAT_RIGHT, 55);
+	wave_list->AppendColumn("Delay", wxLIST_FORMAT_RIGHT, 50);
+	wave_list->AppendColumn("Lifetime", wxLIST_FORMAT_RIGHT, 65);
+	wave_list->AppendColumn("Message", wxLIST_FORMAT_LEFT, 200);
+	right->Add(wave_list, 1, wxEXPAND);
+
+	wxBoxSizer* wb = new wxBoxSizer(wxHORIZONTAL);
+	wxButton* add = new wxButton(this, wxID_ANY, "Add wave");
+	wxButton* edit = new wxButton(this, wxID_ANY, "Edit wave");
+	wxButton* remove = new wxButton(this, wxID_ANY, "Remove wave");
+	wxButton* goto_button = new wxButton(this, wxID_ANY, "Go to");
+	wb->Add(add, 0, wxRIGHT, 4);
+	wb->Add(edit, 0, wxRIGHT, 4);
+	wb->Add(remove, 0, wxRIGHT, 12);
+	wb->Add(goto_button);
+	right->Add(wb, 0, wxTOP, 6);
+	body->Add(right, 1, wxEXPAND | wxALL, 8);
+	outer->Add(body, 1, wxEXPAND);
+
+	outer->Add(new wxStaticText(this, wxID_ANY,
+		"Raids are rolled once when the server boots. BigRaid takes part in the raid "
+		"tournament; SmallRaid fires independently."), 0, wxLEFT | wxRIGHT, 12);
+
+	wxBoxSizer* buttons = new wxBoxSizer(wxHORIZONTAL);
+	wxButton* save_button = new wxButton(this, wxID_ANY, "Save files now");
+	buttons->AddStretchSpacer();
+	buttons->Add(save_button, 0, wxRIGHT, 6);
+	buttons->Add(new wxButton(this, wxID_CLOSE, "Close"));
+	outer->Add(buttons, 0, wxEXPAND | wxALL, 10);
+	SetSizer(outer);
+
+	raid_list->Bind(wxEVT_LISTBOX, [this](wxCommandEvent&) {
+		StoreHeader();
+		LoadRaid(raid_list->GetSelection());
+	});
+	type_ctrl->Bind(wxEVT_CHOICE, [this](wxCommandEvent&) { StoreHeader(); });
+	interval_ctrl->Bind(wxEVT_SPINCTRL, [this](wxSpinEvent&) { StoreHeader(); });
+
+	add->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+		SecRaid* raid = current();
+		if(!raid) return;
+		SecRaidPoint w;
+		w.delay = 1;
+		w.spread = 5;
+		w.countMin = w.countMax = 1;
+		w.hasCount = true;
+		if(!SecData::get().monsters.empty()) w.race = SecData::get().monsters.begin()->first;
+		MapTab* tab = g_gui.IsEditorOpen() ? g_gui.GetCurrentMapTab() : nullptr;
+		MapCanvas* canvas = tab ? tab->GetCanvas() : nullptr;
+		if(canvas) {
+			int cx = 0, cy = 0;
+			canvas->GetScreenCenter(&cx, &cy);
+			w.x = cx; w.y = cy; w.z = g_gui.GetCurrentFloor();
+		}
+		SecRaidWaveDialog dlg(this, w);
+		if(dlg.ShowModal() != wxID_OK) return;
+		raid->addWave(w);
+		SecData::get().reindexRaids();
+		RefreshWaves();
+	});
+
+	edit->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+		SecRaid* raid = current();
+		long sel = wave_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+		if(!raid || sel < 0 || sel >= (long)raid->points.size()) return;
+		SecRaidWaveDialog dlg(this, raid->points[sel]);
+		if(dlg.ShowModal() != wxID_OK) return;
+		raid->apply();
+		SecData::get().reindexRaids();
+		RefreshWaves();
+	});
+
+	remove->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+		SecRaid* raid = current();
+		long sel = wave_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+		if(!raid || sel < 0 || sel >= (long)raid->points.size()) return;
+		const SecRaidPoint& w = raid->points[sel];
+		if(wxMessageBox(wxString::Format("Remove wave %ld (%s at %d,%d,%d)?", sel + 1,
+		                                 wxstr(SecData::get().nameForRace(w.race)), w.x, w.y, w.z),
+		                "Remove wave", wxYES_NO | wxICON_QUESTION, this) != wxYES) return;
+		raid->removeWave((int)sel);
+		SecData::get().reindexRaids();
+		RefreshWaves();
+	});
+
+	goto_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+		SecRaid* raid = current();
+		long sel = wave_list->GetNextItem(-1, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
+		if(!raid || sel < 0 || sel >= (long)raid->points.size() || !g_gui.IsEditorOpen()) return;
+		const SecRaidPoint& w = raid->points[sel];
+		g_gui.SetScreenCenterPosition(Position(w.x, w.y, w.z));
+	});
+
+	save_button->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) {
+		StoreHeader();
+		wxArrayString notes;
+		wxString error;
+		if(!SecData::get().save(notes, error)) {
+			wxMessageBox(error, "Nothing was written", wxOK | wxICON_ERROR, this);
+			return;
+		}
+		wxString msg;
+		for(size_t i = 0; i < notes.GetCount(); ++i) msg << notes[i] << "\n";
+		wxMessageBox(msg.empty() ? "Nothing had changed." : msg, "Saved",
+		             wxOK | wxICON_INFORMATION, this);
+	});
+	Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) {
+		if(e.GetId() == wxID_CLOSE) { StoreHeader(); EndModal(wxID_CLOSE); }
+		else e.Skip();
+	});
+	Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent&) { StoreHeader(); EndModal(wxID_CLOSE); });
+
+	BuildRaidList();
+	Centre();
+}
+
+void SecRaidEditorDialog::BuildRaidList()
 {
 	raid_list->Clear();
-	for(const SecRaid& raid : SecData::get().raids)
-		raid_list->Append(wxString::Format("%s (%ld)", wxstr(raid.file), (long)raid.points.size()));
-	if(!SecData::get().raids.empty()) {
+	const std::vector<SecRaid>& raids = SecData::get().raids;
+	for(const SecRaid& raid : raids)
+		raid_list->Append(wxString::Format("%s (%ld)%s", wxstr(raid.file),
+		                                   (long)raid.points.size(),
+		                                   raid.isDirty() ? " *" : ""));
+	if(!raids.empty()) {
 		raid_list->SetSelection(0);
-		current_raid = 0;
-		RebuildPoints();
+		LoadRaid(0);
 	}
 }
 
-void SecRaidBrowserDialog::RebuildPoints()
+void SecRaidEditorDialog::LoadRaid(int index)
 {
-	point_list->DeleteAllItems();
-	if(current_raid < 0 || current_raid >= (int)SecData::get().raids.size()) return;
-	const SecRaid& raid = SecData::get().raids[current_raid];
+	current_raid = index;
+	SecRaid* raid = current();
+	if(!raid) return;
+	type_ctrl->SetSelection(raid->type == "BigRaid" ? 1 : 0);
+	interval_ctrl->SetValue((int)std::min<long>(raid->interval, 100000000L));
+	RefreshWaves();
+}
+
+void SecRaidEditorDialog::StoreHeader()
+{
+	SecRaid* raid = current();
+	if(!raid) return;
+	raid->type = type_ctrl->GetSelection() == 1 ? "BigRaid" : "SmallRaid";
+	raid->interval = interval_ctrl->GetValue();
+	raid->apply();
+	interval_label->SetLabel(raid->interval > 0
+		? wxString::Format("about every %.1f days", raid->interval / 86400.0)
+		: wxString("no interval set"));
+}
+
+void SecRaidEditorDialog::RefreshWaves()
+{
+	wave_list->DeleteAllItems();
+	SecRaid* raid = current();
+	if(!raid) return;
 	SecData& data = SecData::get();
 
-	wxString info = wxString::Format("%s", wxstr(raid.file));
-	if(!raid.type.empty()) info << "   type " << wxstr(raid.type);
-	if(raid.interval) info << wxString::Format("   interval %ld s (about every %.1f days)",
-	                                           raid.interval, raid.interval / 86400.0);
-	if(raid.dirty) info << "   [edited]";
-	info_label->SetLabel(info);
-
-	for(size_t i = 0; i < raid.points.size(); ++i) {
-		const SecRaidPoint& pt = raid.points[i];
-		long row = point_list->InsertItem((long)i, wxString::Format("%ld", (long)(i + 1)));
-		point_list->SetItem(row, 1, wxstr(data.nameForRace(pt.race)));
-		point_list->SetItem(row, 2, wxString::Format("%d", pt.x));
-		point_list->SetItem(row, 3, wxString::Format("%d", pt.y));
-		point_list->SetItem(row, 4, wxString::Format("%d", pt.z));
-		point_list->SetItem(row, 5, pt.countMin == pt.countMax
-			? wxString::Format("%d", pt.countMin)
-			: wxString::Format("%d-%d", pt.countMin, pt.countMax));
-		point_list->SetItem(row, 6, wxString::Format("%d", pt.spread));
+	for(size_t i = 0; i < raid->points.size(); ++i) {
+		const SecRaidPoint& w = raid->points[i];
+		long row = wave_list->InsertItem((long)i, wxString::Format("%ld", (long)(i + 1)));
+		wave_list->SetItem(row, 1, wxstr(data.nameForRace(w.race)));
+		wave_list->SetItem(row, 2, wxString::Format("%d", w.x));
+		wave_list->SetItem(row, 3, wxString::Format("%d", w.y));
+		wave_list->SetItem(row, 4, wxString::Format("%d", w.z));
+		wave_list->SetItem(row, 5, w.countMin == w.countMax
+			? wxString::Format("%d", w.countMin)
+			: wxString::Format("%d-%d", w.countMin, w.countMax));
+		wave_list->SetItem(row, 6, wxString::Format("%d", w.spread));
+		wave_list->SetItem(row, 7, wxString::Format("%d", w.delay));
+		wave_list->SetItem(row, 8, w.hasLifetime ? wxString::Format("%d", w.lifetime) : wxString("-"));
+		wave_list->SetItem(row, 9, wxstr(w.message));
 	}
-	Layout();
+	interval_label->SetLabel(raid->interval > 0
+		? wxString::Format("about every %.1f days", raid->interval / 86400.0)
+		: wxString("no interval set"));
 }

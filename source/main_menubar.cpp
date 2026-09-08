@@ -2232,7 +2232,7 @@ void MainMenuBar::OnSecSpawns(wxCommandEvent& WXUNUSED(event))
 void MainMenuBar::OnSecNpcs(wxCommandEvent& WXUNUSED(event))
 {
 	if(!secDataReady(frame)) return;
-	SecNpcBrowserDialog dialog(frame);
+	SecNpcEditorDialog dialog(frame);
 	dialog.ShowModal();
 	g_gui.RefreshView();
 }
@@ -2240,7 +2240,7 @@ void MainMenuBar::OnSecNpcs(wxCommandEvent& WXUNUSED(event))
 void MainMenuBar::OnSecRaids(wxCommandEvent& WXUNUSED(event))
 {
 	if(!secDataReady(frame)) return;
-	SecRaidBrowserDialog dialog(frame);
+	SecRaidEditorDialog dialog(frame);
 	dialog.ShowModal();
 	g_gui.RefreshView();
 }
