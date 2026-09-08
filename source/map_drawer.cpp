@@ -1506,6 +1506,16 @@ void MapDrawer::DrawTile(TileLocation* location)
 			if(showspecial && tile->getMapFlags() & TILESTATE_NOPVP) {
 				g /= 2;
 			}
+
+			// Refresh reads as a gold shine. The server restores these tiles
+			// from origmap every sweep, so what is painted here only survives
+			// if origmap is updated too - and a paste from an OTBM cannot
+			// carry the flag, so it has to be visible to be protected.
+			if(showspecial && tile->getMapFlags() & TILESTATE_REFRESH) {
+				r = 255;
+				g = 215;
+				b /= 4;
+			}
 		}
 
 		if(only_colors) {
@@ -1526,6 +1536,14 @@ void MapDrawer::DrawTile(TileLocation* location)
 
 		if(show_tooltips && position.z == floor)
 			WriteTooltip(tile->ground, tooltip);
+	}
+
+	if(!only_colors && !tile->hasGround() && options.show_special_tiles &&
+	   (tile->getMapFlags() & TILESTATE_REFRESH)) {
+		// Ground-less tile: nothing above would have shown the flag.
+		glDisable(GL_TEXTURE_2D);
+		glBlitSquare(draw_x, draw_y, 255, 215, 0, 90);
+		glEnable(GL_TEXTURE_2D);
 	}
 
 	bool hidden = only_colors || (options.hide_items_when_zoomed && zoom > 10.f);

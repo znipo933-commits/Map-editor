@@ -247,6 +247,15 @@ void CopyBuffer::paste(Editor& editor, const Position& toPosition)
 		} else {
 			// If the copied tile has ground, replace target tile
 			new_dest_tile = copy_tile;
+
+			// A replacing paste takes the source tile's flags wholesale. The
+			// CipSoft .sec format has flags OTBM cannot express - Refresh
+			// above all - so a paste from an 8.x map arrives without it and
+			// would silently strip the destination's. Carry it over; the
+			// Refresh brush is how you deliberately clear one.
+			if(old_dest_tile) {
+				new_dest_tile->setMapFlags(old_dest_tile->getMapFlags() & TILESTATE_REFRESH);
+			}
 		}
 
 		// Add all surrounding tiles to the map, so they get borders
