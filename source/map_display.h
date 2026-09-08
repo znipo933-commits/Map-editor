@@ -148,6 +148,9 @@ private:
 	bool drawing;
 	bool dragging_draw;
 	bool replace_dragging;
+	// A flag-brush stroke that started on a tile which already carries the
+	// flag removes it instead of adding it (decided once, at mouse down).
+	bool flag_brush_erase;
 
 	uint8_t* screenshot_buffer;
 

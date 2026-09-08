@@ -117,6 +117,7 @@ MapCanvas::MapCanvas(MapWindow* parent, Editor& editor, int* attriblist) :
 	drawing(false),
 	dragging_draw(false),
 	replace_dragging(false),
+	flag_brush_erase(false),
 
 	screenshot_buffer(nullptr),
 
@@ -555,7 +556,7 @@ void MapCanvas::OnMouseMove(wxMouseEvent& event)
 						}
 					}
 				}
-				if(event.ControlDown()) {
+				if(event.ControlDown() || flag_brush_erase) {
 					editor.undraw(tilestodraw, event.AltDown());
 				} else {
 					editor.draw(tilestodraw, event.AltDown());
@@ -781,6 +782,19 @@ void MapCanvas::OnMouseActionClick(wxMouseEvent& event)
 		} while(false);
 	} else if(g_gui.GetCurrentBrush()) { // Drawing mode
 		Brush* brush = g_gui.GetCurrentBrush();
+
+		// Flag brushes (PZ, refresh, ...) toggle. A stroke that starts on a
+		// tile which already carries the flag takes it away instead of adding
+		// it, so the brush is also its own eraser. The mode is decided once,
+		// here at mouse down, so dragging over mixed tiles does not flicker.
+		flag_brush_erase = false;
+		if(brush->isFlag()) {
+			Tile* flag_tile = editor.getMap().getTile(mouse_map_x, mouse_map_y, floor);
+			if(flag_tile && (flag_tile->getMapFlags() & brush->asFlag()->getFlag()) != 0) {
+				flag_brush_erase = true;
+			}
+		}
+
 		if(event.ShiftDown() && brush->canDrag()) {
 			dragging_draw = true;
 		} else {
@@ -909,7 +923,7 @@ void MapCanvas::OnMouseActionClick(wxMouseEvent& event)
 
 					getTilesToDraw(mouse_map_x, mouse_map_y, floor, &tilestodraw, nullptr);
 
-					if(event.ControlDown()) {
+					if(event.ControlDown() || flag_brush_erase) {
 						editor.undraw(tilestodraw, event.AltDown());
 					} else {
 						editor.draw(tilestodraw, event.AltDown());
@@ -1214,7 +1228,7 @@ void MapCanvas::OnMouseActionRelease(wxMouseEvent& event)
 						}
 					}
 				}
-				if(event.ControlDown()) {
+				if(event.ControlDown() || flag_brush_erase) {
 					editor.undraw(tilestodraw, tilestoborder, event.AltDown());
 				} else {
 					editor.draw(tilestodraw, tilestoborder, event.AltDown());
@@ -1225,6 +1239,7 @@ void MapCanvas::OnMouseActionRelease(wxMouseEvent& event)
 		editor.updateActions();
 		drawing = false;
 		dragging_draw = false;
+		flag_brush_erase = false;
 		replace_dragging = false;
 		editor.replace_brush = nullptr;
 	}
@@ -2213,6 +2228,7 @@ void MapCanvas::EnterSelectionMode()
 {
 	drawing = false;
 	dragging_draw = false;
+	flag_brush_erase = false;
 	replace_dragging = false;
 	editor.replace_brush = nullptr;
 	Refresh();
@@ -2246,6 +2262,7 @@ void MapCanvas::Reset()
 	screendragging = false;
 	drawing = false;
 	dragging_draw = false;
+	flag_brush_erase = false;
 
 	replace_dragging = false;
 	editor.replace_brush = nullptr;
