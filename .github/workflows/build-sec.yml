@@ -26,6 +26,23 @@ jobs:
         run: |
           ./test_sec_roundtrip test/sec_fixtures
 
+      - name: Build the monster data tests
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror \
+              -o test_mon_roundtrip \
+              source/sec_mon.cpp source/test_mon_roundtrip.cpp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror \
+              -o test_monsterdb_roundtrip \
+              source/sec_monsterdb.cpp source/sec_mon.cpp source/test_monsterdb_roundtrip.cpp
+
+      # Point MON_DIR / MONSTER_DB at a real server tree to gate on the live
+      # 448 races and 22k spawn rows instead of the fixtures.
+      - name: Round-trip the monster data (optional)
+        if: ${{ env.MON_DIR != '' }}
+        run: |
+          ./test_mon_roundtrip "$MON_DIR"
+          ./test_monsterdb_roundtrip "$MONSTER_DB" "$MON_DIR"
+
       # Point SEC_MAP_DIR at a real map checkout to test against the full
       # 9873-sector map instead of the small fixture set.
       - name: Round-trip a full map (optional)

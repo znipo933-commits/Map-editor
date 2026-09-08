@@ -27,6 +27,7 @@
 #include "gui.h"
 #include "sprites.h"
 #include "map_drawer.h"
+#include "sec_data.h"
 #include "map_display.h"
 #include "copybuffer.h"
 #include "live_socket.h"
@@ -1568,12 +1569,75 @@ void MapDrawer::DrawTile(TileLocation* location)
 		BlitCreature(draw_x, draw_y, tile->creature);
 	}
 
+	if(!hidden) {
+		DrawSecOverlay(draw_x, draw_y, position);
+	}
+
 	if(show_tooltips) {
 		if(location->getWaypointCount() > 0)
 			MakeTooltip(draw_x, draw_y, tooltip.str(), 0, 255, 0);
 		else
 			MakeTooltip(draw_x, draw_y, tooltip.str());
 		tooltip.str("");
+	}
+}
+
+// Spawns, NPC homes and raid waves live beside the .sec map in monster.db,
+// the .npc files and the .evt files, so they are drawn here rather than from
+// anything on the Tile. A tile may carry several spawn rows; the first race
+// is drawn and the rest are counted.
+void MapDrawer::DrawSecOverlay(int draw_x, int draw_y, const Position& position)
+{
+	SecData& data = SecData::get();
+	if(!data.isLoaded()) return;
+	if(!options.show_creatures) return;
+
+	const bool tooltips = options.isTooltips() && position.z == floor;
+
+	if(const std::vector<size_t>* rows = data.spawnsAt(position)) {
+		const secmon::SpawnRow& first = data.db.rows[(*rows)[0]];
+		BlitCreature(draw_x, draw_y, data.outfitForRace(first.race), SOUTH, 255, 255, 255, 220);
+
+		// More than one race on this tile: mark it, it is easy to miss.
+		if(rows->size() > 1)
+			drawRect(draw_x + rme::TileSize - 9, draw_y + 1, 8, 8, wxColor(255, 80, 80), 2);
+
+		// The leash box, only for the tile under the cursor - radius is
+		// usually 50, so drawing them all would cover the whole screen.
+		if(canvas && canvas->GetCursorPosition() == position && first.radius > 0) {
+			const int r = first.radius;
+			drawRect(draw_x - r * rme::TileSize, draw_y - r * rme::TileSize,
+			         (2 * r + 1) * rme::TileSize, (2 * r + 1) * rme::TileSize,
+			         wxColor(255, 200, 0), 1);
+		}
+
+		if(tooltips) {
+			for(size_t i = 0; i < rows->size(); ++i) {
+				const secmon::SpawnRow& row = data.db.rows[(*rows)[i]];
+				tooltip << data.nameForRace(row.race) << " x" << row.amount
+				        << "  radius " << row.radius << "  respawn " << row.regen << "\n";
+			}
+		}
+	}
+
+	if(const std::vector<size_t>* here = data.npcsAt(position)) {
+		const SecNpc& npc = data.npcs[(*here)[0]];
+		BlitCreature(draw_x, draw_y, npc.outfit, SOUTH, 255, 255, 255, 220);
+		drawRect(draw_x + 1, draw_y + 1, 8, 8, wxColor(80, 160, 255), 2);
+		if(tooltips)
+			for(size_t i = 0; i < here->size(); ++i)
+				tooltip << "NPC " << data.npcs[(*here)[i]].name << "\n";
+	}
+
+	if(const std::vector<uint32_t>* here = data.raidsAt(position)) {
+		drawRect(draw_x + 2, draw_y + rme::TileSize - 10, 8, 8, wxColor(200, 80, 255), 2);
+		if(tooltips)
+			for(size_t i = 0; i < here->size(); ++i) {
+				const SecRaid& raid = data.raids[(*here)[i] >> 16];
+				const SecRaidPoint& pt = raid.points[(*here)[i] & 0xFFFF];
+				tooltip << "raid " << raid.file << ": " << data.nameForRace(pt.race)
+				        << " x" << pt.countMin << "-" << pt.countMax << "\n";
+			}
 	}
 }
 

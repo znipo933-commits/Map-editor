@@ -18,6 +18,7 @@
 #include "main.h"
 
 #include "main_menubar.h"
+#include "sec_editors.h"
 #include "application.h"
 #include "preferences.h"
 #include "about_window.h"
@@ -120,6 +121,10 @@ MainMenuBar::MainMenuBar(MainFrame *frame) : frame(frame)
 	MAKE_ACTION(MAP_CLEAN_HOUSE_ITEMS, wxITEM_NORMAL, OnMapCleanHouseItems);
 	MAKE_ACTION(MAP_PROPERTIES, wxITEM_NORMAL, OnMapProperties);
 	MAKE_ACTION(MAP_STATISTICS, wxITEM_NORMAL, OnMapStatistics);
+	MAKE_ACTION(SEC_MONSTERS, wxITEM_NORMAL, OnSecMonsters);
+	MAKE_ACTION(SEC_SPAWNS, wxITEM_NORMAL, OnSecSpawns);
+	MAKE_ACTION(SEC_NPCS, wxITEM_NORMAL, OnSecNpcs);
+	MAKE_ACTION(SEC_RAIDS, wxITEM_NORMAL, OnSecRaids);
 
 	MAKE_ACTION(VIEW_TOOLBARS_BRUSHES, wxITEM_CHECK, OnToolbars);
 	MAKE_ACTION(VIEW_TOOLBARS_POSITION, wxITEM_CHECK, OnToolbars);
@@ -375,6 +380,10 @@ void MainMenuBar::Update()
 	EnableItem(MAP_CLEANUP, is_local);
 	EnableItem(MAP_PROPERTIES, is_local);
 	EnableItem(MAP_STATISTICS, is_local);
+	EnableItem(SEC_MONSTERS, is_local);
+	EnableItem(SEC_SPAWNS, is_local);
+	EnableItem(SEC_NPCS, is_local);
+	EnableItem(SEC_RAIDS, is_local);
 
 	EnableItem(NEW_VIEW, has_map);
 	EnableItem(ZOOM_IN, has_map);
@@ -2179,4 +2188,52 @@ void MainMenuBar::SearchDuplicatedItems(bool selection)
 
 	auto dialog = g_gui.ShowDuplicatedItemsWindow();
 	dialog->StartSearch(g_gui.GetCurrentMapTab(), selection);
+}
+
+// ============================================================================
+// The data that lives beside a .sec map: races, spawns, NPC homes and raids.
+
+namespace {
+
+bool secDataReady(wxWindow* parent)
+{
+	if(SecData::get().isLoaded()) return true;
+	g_gui.PopupDialog(parent, "No monster data",
+		"This is only available for a CipSoft .sec map, and only when the "
+		"mon/, dat/ and npc/ folders sit beside the map folder.", wxOK);
+	return false;
+}
+
+} // namespace
+
+void MainMenuBar::OnSecMonsters(wxCommandEvent& WXUNUSED(event))
+{
+	if(!secDataReady(frame)) return;
+	SecMonsterEditorDialog dialog(frame);
+	dialog.ShowModal();
+	g_gui.RefreshView();
+}
+
+void MainMenuBar::OnSecSpawns(wxCommandEvent& WXUNUSED(event))
+{
+	if(!secDataReady(frame)) return;
+	SecSpawnBrowserDialog dialog(frame);
+	dialog.ShowModal();
+	g_gui.RefreshView();
+}
+
+void MainMenuBar::OnSecNpcs(wxCommandEvent& WXUNUSED(event))
+{
+	if(!secDataReady(frame)) return;
+	SecNpcBrowserDialog dialog(frame);
+	dialog.ShowModal();
+	g_gui.RefreshView();
+}
+
+void MainMenuBar::OnSecRaids(wxCommandEvent& WXUNUSED(event))
+{
+	if(!secDataReady(frame)) return;
+	SecRaidBrowserDialog dialog(frame);
+	dialog.ShowModal();
+	g_gui.RefreshView();
 }

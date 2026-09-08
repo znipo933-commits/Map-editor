@@ -31,6 +31,7 @@
 #include "properties_window.h"
 #include "palette_window.h"
 #include "map_display.h"
+#include "sec_editors.h"
 #include "map_drawer.h"
 #include "application.h"
 #include "live_server.h"
@@ -100,6 +101,7 @@ BEGIN_EVENT_TABLE(MapCanvas, wxGLCanvas)
 	EVT_MENU(MAP_POPUP_MENU_PROPERTIES, MapCanvas::OnProperties)
 	// ----
 	EVT_MENU(MAP_POPUP_MENU_BROWSE_TILE, MapCanvas::OnBrowseTile)
+	EVT_MENU(MAP_POPUP_MENU_EDIT_SEC_SPAWNS, MapCanvas::OnEditSecSpawns)
 END_EVENT_TABLE()
 
 bool MapCanvas::processed[] = {0};
@@ -2449,6 +2451,10 @@ void MapPopupMenu::Update()
 
 			wxMenuItem* browseTile = Append(MAP_POPUP_MENU_BROWSE_TILE, "Browse Field", "Navigate from tile items");
 			browseTile->Enable(anything_selected);
+
+			if(SecData::get().isLoaded())
+				Append(MAP_POPUP_MENU_EDIT_SEC_SPAWNS, "Edit &Spawns Here",
+				       "Edit the monster.db rows standing on this tile");
 		}
 	}
 }
@@ -2595,3 +2601,15 @@ void AnimationTimer::Stop()
 		wxTimer::Stop();
 	}
 };
+
+void MapCanvas::OnEditSecSpawns(wxCommandEvent& WXUNUSED(event))
+{
+	if(!SecData::get().isLoaded()) return;
+
+	int map_x = 0, map_y = 0;
+	ScreenToMap(cursor_x, cursor_y, &map_x, &map_y);
+
+	SecTileSpawnDialog dialog(g_gui.root, Position(map_x, map_y, g_gui.GetCurrentFloor()));
+	dialog.ShowModal();
+	g_gui.RefreshView();
+}

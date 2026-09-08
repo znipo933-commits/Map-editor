@@ -18,6 +18,7 @@
 #include "main.h"
 
 #include "iomap_sec.h"
+#include "sec_data.h"
 
 #include "complexitem.h"
 #include "item.h"
@@ -352,6 +353,15 @@ bool IOMapSec::loadMap(Map& map, const FileName& identifier)
 	map.setWidth(std::min(65000, max_x + SECTOR_SIZE));
 	map.setHeight(std::min(65000, max_y + SECTOR_SIZE));
 
+	// monster.db, the .mon races, the NPC homes and the raids all live beside
+	// the map rather than inside it. Load them so they can be edited too.
+	{
+		wxArrayString notes;
+		SecData::get().loadForSectorDir(dir, notes);
+		for(size_t i = 0; i < notes.GetCount(); ++i)
+			warning("%s", (const char*)notes[i].mb_str());
+	}
+
 	for(std::map<uint16_t, uint32_t>::const_iterator it = untranslated_client_ids.begin();
 	    it != untranslated_client_ids.end(); ++it) {
 		warning("Client item id %d has no items.otb counterpart, %u occurrence(s) parked "
@@ -609,6 +619,20 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 				        "not in the .sec files");
 			}
 		}
+	}
+
+	// Write the sidecar data. A refusal here means monster.db failed its own
+	// validation - it is reported loudly, but the sectors above are already
+	// written and are unaffected.
+	{
+		wxArrayString notes;
+		wxString sec_error;
+		if(!SecData::get().save(notes, sec_error)) {
+			warning("NOTHING was written for the monster/spawn data: %s",
+			        (const char*)sec_error.mb_str());
+		}
+		for(size_t i = 0; i < notes.GetCount(); ++i)
+			warning("%s", (const char*)notes[i].mb_str());
 	}
 
 	for(std::map<uint16_t, uint32_t>::const_iterator bad = untranslated_server_ids.begin();
