@@ -191,6 +191,7 @@ public:
 	void OnClickNOPVPBrushButton(wxCommandEvent& event);
 	void OnClickNoLogoutBrushButton(wxCommandEvent& event);
 	void OnClickPVPZoneBrushButton(wxCommandEvent& event);
+	void OnClickRefreshBrushButton(wxCommandEvent& event);
 public:
 	void DeselectAll();
 

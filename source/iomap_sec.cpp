@@ -27,6 +27,7 @@
 
 #include <wx/dir.h>
 #include <wx/filename.h>
+#include <wx/filefn.h>
 
 #include <fstream>
 #include <sstream>
@@ -78,6 +79,40 @@ namespace {
 		}
 		out.write(data.data(), (std::streamsize)data.size());
 		return out.good();
+	}
+
+	// CipSoft .sec has no ActionID or UniqueID, and no counterpart for an OTBM
+	// teleport destination either. Dropping them silently loses quest keys,
+	// level-door levels and every portal target, so each one is recorded in
+	// _actionids.txt beside the map for the server-side tools to apply.
+	void collectItemExtras(std::ostringstream& os, const Position& pos, Item* item,
+	                       const std::string& path)
+	{
+		const uint16_t aid = item->getActionID();
+		const uint16_t uid = item->getUniqueID();
+		std::string extra;
+		if(Teleport* tp = item->getTeleport()) {
+			std::ostringstream d;
+			d << "\tdest=" << tp->getX() << "," << tp->getY() << "," << tp->getZ();
+			extra = d.str();
+		}
+		if(aid != 0 || uid != 0 || !extra.empty()) {
+			os << pos.x << "\t" << pos.y << "\t" << pos.z
+			   << "\t" << item->getID()
+			   << "\taction=" << aid
+			   << "\tunique=" << uid
+			   << "\t" << (path.empty() ? std::string("tile") : path)
+			   << extra << "\n";
+		}
+		if(Container* container = item->getContainer()) {
+			ItemVector& v = container->getVector();
+			for(size_t k = 0; k < v.size(); ++k) {
+				std::ostringstream child;
+				if(!path.empty()) child << path << "/";
+				child << item->getID() << ":" << k;
+				collectItemExtras(os, pos, v[k], child.str());
+			}
+		}
 	}
 
 } // namespace
@@ -452,6 +487,9 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 	// sectors actually edited.
 	std::map<std::string, bool> sector_dirty;
 
+	// Every ActionID / UniqueID / teleport destination seen, for _actionids.txt
+	std::ostringstream extras;
+
 	MapIterator it = map.begin();
 	while(it != map.end()) {
 		Tile* tile = (*it)->get();
@@ -503,6 +541,13 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 		}
 		out.has_content = !out.content.empty();
 
+		if(tile->ground) {
+			collectItemExtras(extras, pos, tile->ground, std::string());
+		}
+		for(ItemVector::iterator entry = tile->items.begin(); entry != tile->items.end(); ++entry) {
+			collectItemExtras(extras, pos, *entry, std::string());
+		}
+
 		found->second.tiles.push_back(out);
 		sector_dirty[name] = sector_dirty[name] || tile->isModified();
 		++it;
@@ -531,6 +576,27 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 	}
 	warning("Wrote %u modified sector(s), left %u untouched sector(s) as-is",
 	        (unsigned)written, (unsigned)kept);
+
+	{
+		const wxString extras_path = dir + wxFileName::GetPathSeparator() + wxT("_actionids.txt");
+		const std::string body = extras.str();
+		if(body.empty()) {
+			if(wxFileName::FileExists(extras_path)) {
+				wxRemoveFile(extras_path);
+			}
+		} else {
+			std::string file =
+				"# ActionID / UniqueID / teleport destinations, which the .sec format cannot hold.\n"
+				"# x\ty\tz\titemid\taction=N\tunique=N\twhere[\tdest=x,y,z]\n";
+			file += body;
+			if(!writeWholeFile(extras_path, file)) {
+				warning("Could not write _actionids.txt");
+			} else {
+				warning("Wrote _actionids.txt - ActionIDs and teleport destinations are recorded there, "
+				        "not in the .sec files");
+			}
+		}
+	}
 
 	for(std::map<uint16_t, uint32_t>::const_iterator bad = untranslated_server_ids.begin();
 	    bad != untranslated_server_ids.end(); ++bad) {

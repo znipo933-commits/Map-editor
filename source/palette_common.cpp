@@ -393,6 +393,7 @@ BEGIN_EVENT_TABLE(BrushToolPanel, PalettePanel)
 	EVT_TOGGLEBUTTON(PALETTE_TERRAIN_NOPVP_TOOL,BrushToolPanel::OnClickNOPVPBrushButton)
 	EVT_TOGGLEBUTTON(PALETTE_TERRAIN_NOLOGOUT_TOOL,BrushToolPanel::OnClickNoLogoutBrushButton)
 	EVT_TOGGLEBUTTON(PALETTE_TERRAIN_PVPZONE_TOOL,BrushToolPanel::OnClickPVPZoneBrushButton)
+	EVT_TOGGLEBUTTON(PALETTE_TERRAIN_REFRESH_TOOL,BrushToolPanel::OnClickRefreshBrushButton)
 END_EVENT_TABLE()
 
 BrushToolPanel::BrushToolPanel(wxWindow* parent) :
@@ -620,6 +621,8 @@ void BrushToolPanel::DeselectAll()
 		nopvpBrushButton->SetValue(false);
 		nologBrushButton->SetValue(false);
 		pvpzoneBrushButton->SetValue(false);
+		if(refreshBrushButton)
+			refreshBrushButton->SetValue(false);
 	}
 }
 
@@ -649,6 +652,8 @@ Brush* BrushToolPanel::GetSelectedBrush() const
 		return g_gui.nolog_brush;
 	if(pvpzoneBrushButton->GetValue())
 		return g_gui.pvp_brush;
+	if(refreshBrushButton && refreshBrushButton->GetValue())
+		return g_gui.refresh_brush;
 	return nullptr;
 }
 
@@ -679,6 +684,8 @@ bool BrushToolPanel::SelectBrush(const Brush* whatbrush)
 		button = nologBrushButton;
 	} else if(whatbrush == g_gui.pvp_brush) {
 		button = pvpzoneBrushButton;
+	} else if(whatbrush == g_gui.refresh_brush) {
+		button = refreshBrushButton;
 	}
 
 	DeselectAll();
@@ -765,6 +772,12 @@ void BrushToolPanel::OnClickPVPZoneBrushButton(wxCommandEvent& event)
 {
 	g_gui.ActivatePalette(GetParentPalette());
 	g_gui.SelectBrush(g_gui.pvp_brush);
+}
+
+void BrushToolPanel::OnClickRefreshBrushButton(wxCommandEvent& event)
+{
+	g_gui.ActivatePalette(GetParentPalette());
+	g_gui.SelectBrush(g_gui.refresh_brush);
 }
 
 // ============================================================================
