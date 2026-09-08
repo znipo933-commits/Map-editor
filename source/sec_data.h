@@ -74,6 +74,10 @@ public:
 	bool loadForSectorDir(const wxString& sectorDir, wxArrayString& warnings);
 	bool save(wxArrayString& warnings, wxString& error);
 	bool isLoaded() const { return loaded; }
+	// True once a .sec map has been opened, whether or not the sidecar
+	// folders were found. Lets the UI offer the entry and say why.
+	bool wasSecMap() const { return tried; }
+	const std::string& expectedRoot() const { return rootDir; }
 
 	// ---- monsters -------------------------------------------------------
 	std::map<int, secmon::MonFile> monsters;      // keyed by RaceNumber
@@ -119,6 +123,7 @@ private:
 	void loadRaids(wxArrayString& warnings);
 
 	bool loaded = false;
+	bool tried = false;
 	std::map<uint64_t, std::vector<size_t> > spawnIndex;
 	std::map<uint64_t, std::vector<size_t> > npcIndex;
 	std::map<uint64_t, std::vector<uint32_t> > raidIndex;

@@ -99,6 +99,7 @@ void SecData::clear() {
 	nameToRace.clear();
 	rootDir.clear(); monDir.clear(); datDir.clear(); npcDir.clear();
 	loaded = false;
+	tried = false;
 	monstersDirty = false;
 }
 
@@ -115,14 +116,30 @@ bool SecData::loadForSectorDir(const wxString& sectorDir, wxArrayString& warning
 	datDir  = std::string((rootPath + sep + "dat").mb_str());
 	npcDir  = std::string((rootPath + sep + "npc").mb_str());
 
-	loadMonsters(warnings);
-	loadSpawns(warnings);
-	loadNpcs(warnings);
-	loadRaids(warnings);
+	tried = true;
 
-	loaded = !monsters.empty() || db.rows.size() > 0 || !npcs.empty();
-	if(loaded) registerCreatures();
-	return loaded;
+	// Collect the sidecar warnings separately: when none of the folders are
+	// there at all, three cryptic lines are worse than one clear one.
+	wxArrayString found;
+	loadMonsters(found);
+	loadSpawns(found);
+	loadNpcs(found);
+	loadRaids(found);
+
+	loaded = !monsters.empty() || !db.rows.empty() || !npcs.empty();
+
+	if(!loaded) {
+		warnings.Add(wxString::Format(
+			"No monster data found, so the Monsters, Spawns, NPCs and Raids editors "
+			"stay disabled. They need mon, dat and npc folders sitting beside the "
+			"folder that holds the .sec files. Looked beside the map for: %s",
+			wxString(rootDir.c_str(), wxConvUTF8)));
+		return false;
+	}
+
+	for(size_t i = 0; i < found.GetCount(); ++i) warnings.Add(found[i]);
+	registerCreatures();
+	return true;
 }
 
 void SecData::loadMonsters(wxArrayString& warnings) {

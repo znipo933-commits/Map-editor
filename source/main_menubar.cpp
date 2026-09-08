@@ -2198,9 +2198,16 @@ namespace {
 bool secDataReady(wxWindow* parent)
 {
 	if(SecData::get().isLoaded()) return true;
+	wxString where = wxString(SecData::get().expectedRoot().c_str(), wxConvUTF8);
 	g_gui.PopupDialog(parent, "No monster data",
-		"This is only available for a CipSoft .sec map, and only when the "
-		"mon/, dat/ and npc/ folders sit beside the map folder.", wxOK);
+		"This needs the mon, dat and npc folders to sit beside the folder that "
+		"holds the .sec files:\n\n"
+		"    <world>\\map\\   the .sec sectors\n"
+		"    <world>\\mon\\   the .mon races and .evt raids\n"
+		"    <world>\\dat\\   monster.db\n"
+		"    <world>\\npc\\   the .npc files\n\n"
+		+ (where.empty() ? wxString("Open a .sec map first.")
+		                 : "Nothing was found beside: " + where), wxOK);
 	return false;
 }
 

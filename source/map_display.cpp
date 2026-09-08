@@ -2320,6 +2320,18 @@ void MapPopupMenu::Update()
 	wxMenuItem* deleteItem = Append( MAP_POPUP_MENU_DELETE, "&Delete\tDEL", "Removes all seleceted items");
 	deleteItem->Enable(anything_selected);
 
+	// Spawns live in monster.db, not on the tile, so this does not depend on a
+	// selection. Shown for any .sec map; disabled with a reason when the
+	// mon/ dat/ npc/ folders were not found beside it.
+	if(SecData::get().wasSecMap()) {
+		AppendSeparator();
+		wxMenuItem* spawnItem = Append(MAP_POPUP_MENU_EDIT_SEC_SPAWNS, "Edit &Spawns Here",
+			SecData::get().isLoaded()
+				? "Edit the monster.db rows standing on this tile"
+				: "No monster data was found beside this map");
+		spawnItem->Enable(SecData::get().isLoaded());
+	}
+
 	if(anything_selected) {
 		if(editor.getSelection().size() == 1) {
 			Tile* tile = editor.getSelection().getSelectedTile();
@@ -2451,10 +2463,6 @@ void MapPopupMenu::Update()
 
 			wxMenuItem* browseTile = Append(MAP_POPUP_MENU_BROWSE_TILE, "Browse Field", "Navigate from tile items");
 			browseTile->Enable(anything_selected);
-
-			if(SecData::get().isLoaded())
-				Append(MAP_POPUP_MENU_EDIT_SEC_SPAWNS, "Edit &Spawns Here",
-				       "Edit the monster.db rows standing on this tile");
 		}
 	}
 }
@@ -2606,10 +2614,7 @@ void MapCanvas::OnEditSecSpawns(wxCommandEvent& WXUNUSED(event))
 {
 	if(!SecData::get().isLoaded()) return;
 
-	int map_x = 0, map_y = 0;
-	ScreenToMap(cursor_x, cursor_y, &map_x, &map_y);
-
-	SecTileSpawnDialog dialog(g_gui.root, Position(map_x, map_y, g_gui.GetCurrentFloor()));
+	SecTileSpawnDialog dialog(g_gui.root, GetCursorPosition());
 	dialog.ShowModal();
 	g_gui.RefreshView();
 }

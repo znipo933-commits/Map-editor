@@ -270,7 +270,7 @@ bool IOMapSec::loadMap(Map& map, const FileName& identifier)
 	wxArrayString files;
 	wxDir::GetAllFiles(dir, &files, "*.sec", wxDIR_FILES);
 	if(files.IsEmpty()) {
-		error("No .sec files found in %s", dir.c_str());
+		error("No .sec files found in %s", dir);
 		return false;
 	}
 	files.Sort();
@@ -284,7 +284,7 @@ bool IOMapSec::loadMap(Map& map, const FileName& identifier)
 
 		int sx = 0, sy = 0, sz = 0;
 		if(!sec::parseFilename(base, sx, sy, sz)) {
-			warning("Skipping '%s': not a sector filename", base.c_str());
+			warning("Skipping '%s': not a sector filename", wxstr(base));
 			continue;
 		}
 
@@ -292,7 +292,7 @@ bool IOMapSec::loadMap(Map& map, const FileName& identifier)
 		try {
 			sector = sec::parse(readWholeFile(files[f]));
 		} catch(const std::exception& e) {
-			error("Failed to parse %s: %s", base.c_str(), e.what());
+			error("Failed to parse %s: %s", wxstr(base), wxstr(std::string(e.what())));
 			return false;
 		}
 
@@ -359,7 +359,7 @@ bool IOMapSec::loadMap(Map& map, const FileName& identifier)
 		wxArrayString notes;
 		SecData::get().loadForSectorDir(dir, notes);
 		for(size_t i = 0; i < notes.GetCount(); ++i)
-			warning("%s", (const char*)notes[i].mb_str());
+			warning("%s", notes[i]);
 	}
 
 	for(std::map<uint16_t, uint32_t>::const_iterator it = untranslated_client_ids.begin();
@@ -496,7 +496,7 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 
 	const wxString dir = sectorDirectory(identifier);
 	if(!wxDirExists(dir)) {
-		error("Sector directory does not exist: %s", dir.c_str());
+		error("Sector directory does not exist: %s", dir);
 		return false;
 	}
 
@@ -592,7 +592,7 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 		});
 
 		if(!writeWholeFile(path, sec::dump(sector->second))) {
-			error("Could not write %s", sector->first.c_str());
+			error("Could not write %s", wxstr(sector->first));
 			return false;
 		}
 		++written;
@@ -628,11 +628,10 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 		wxArrayString notes;
 		wxString sec_error;
 		if(!SecData::get().save(notes, sec_error)) {
-			warning("NOTHING was written for the monster/spawn data: %s",
-			        (const char*)sec_error.mb_str());
+			warning("NOTHING was written for the monster/spawn data: %s", sec_error);
 		}
 		for(size_t i = 0; i < notes.GetCount(); ++i)
-			warning("%s", (const char*)notes[i].mb_str());
+			warning("%s", notes[i]);
 	}
 
 	for(std::map<uint16_t, uint32_t>::const_iterator bad = untranslated_server_ids.begin();
