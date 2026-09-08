@@ -504,6 +504,11 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 	typedef std::map<std::string, sec::Sector> SectorMap;
 	SectorMap sectors;
 
+	// A sector is written only if it contains a tile the user modified
+	// (or its file does not exist yet). Untouched sectors keep their
+	// original bytes, which confines any load/save infidelity to the
+	// sectors actually edited.
+	std::map<std::string, bool> sector_dirty;
 
 	// Every ActionID / UniqueID / teleport destination seen, for _actionids.txt
 	std::ostringstream extras;
@@ -567,6 +572,7 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 		}
 
 		found->second.tiles.push_back(out);
+		sector_dirty[name] = sector_dirty[name] || tile->isModified();
 		++it;
 	}
 
@@ -576,7 +582,10 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 	for(SectorMap::iterator sector = sectors.begin(); sector != sectors.end(); ++sector) {
 		const wxString path = dir + wxFileName::GetPathSeparator() + wxString(sector->first.c_str(), wxConvUTF8);
 
-
+		if(!sector_dirty[sector->first] && wxFileName::FileExists(path)) {
+			++kept;
+			continue;
+		}
 
 		std::vector<sec::Tile>& tiles = sector->second.tiles;
 		std::sort(tiles.begin(), tiles.end(), [](const sec::Tile& a, const sec::Tile& b) {
@@ -585,43 +594,14 @@ bool IOMapSec::saveMap(Map& map, const FileName& identifier)
 
 		const std::string body = sec::dump(sector->second);
 
-		// Whether to write is decided by comparing the map against the file,
-		// NEVER by a dirty flag.
-		//
-		// Tile::isModified() cannot answer this. Paint a tile, save, then
-		// undo: Action::undo swaps the ORIGINAL tile object back in, and that
-		// object is not modified, so the sector looks untouched and the
-		// already-saved paint stays on disk for good. That is a real edit that
-		// silently survived an undo, and it happened twice before this check
-		// existed.
+		// Report what actually changed. An edit nobody meant to make - an
+		// undo that did not take, a stray brush stroke - is otherwise only
+		// found days later, by diffing against a backup.
 		if(wxFileName::FileExists(path)) {
 			const std::string before = readWholeFile(path);
 			if(before == body) {
 				++kept;
-				continue;               // nothing to do
-			}
-
-			// Different bytes are not necessarily different content: a couple
-			// of sectors in the live map do not round-trip byte-exactly
-			// through this writer. Compare the file in its canonical form
-			// before deciding, so an untouched sector keeps its own bytes.
-			bool same_content = false;
-			try {
-				sec::Sector disk = sec::parse(before);
-				disk.sx = sector->second.sx;
-				disk.sy = sector->second.sy;
-				disk.sz = sector->second.sz;
-				std::sort(disk.tiles.begin(), disk.tiles.end(),
-				          [](const sec::Tile& a, const sec::Tile& b) {
-					return a.x != b.x ? a.x < b.x : a.y < b.y;
-				});
-				same_content = (sec::dump(disk) == body);
-			} catch(const std::exception&) {
-				same_content = false;   // unreadable on disk: rewrite it
-			}
-			if(same_content) {
-				++kept;
-				continue;
+				continue;               // dirty flag, but identical bytes
 			}
 			std::vector<std::string> old_lines, new_lines;
 			{

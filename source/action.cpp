@@ -287,6 +287,13 @@ void Action::undo(DirtyList* dirty_list)
 
 				Tile* new_tile = map.swapTile(pos, old_tile);
 
+				// commit() marks the tile it puts in; undo has to do the same.
+				// Without this the tile restored by an undo looks untouched,
+				// so a writer that only saves modified tiles - the .sec one -
+				// leaves an already-saved edit on disk for good. Sequence that
+				// breaks: paint, save, undo, save.
+				old_tile->modify();
+
 				// Update server side change list (for broadcast)
 				if(editor.IsLiveServer() && dirty_list)
 					dirty_list->AddPosition(pos.x, pos.y, pos.z);
