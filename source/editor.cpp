@@ -100,10 +100,20 @@ Editor::Editor(CopyBuffer& copybuffer, const FileName& fn) :
 {
 	MapVersion ver;
 	if(IOMapSec::isSecMap(fn)) {
-		// .sec sectors carry no version header; they are always the
-		// CipSoft 7.7 map read through the currently loaded client.
+		// .sec sectors carry no version header, so the item set has to come
+		// from somewhere else. Use whatever client is already loaded - that is
+		// what keeps an 8.x OTBM open in the next tab - and on a cold start
+		// take the version marked default="true" in clients.xml. Pinning 8.60
+		// here made every .sec map load through the 8.x item set no matter
+		// which profile was installed, which is wrong for a 7.7-only build.
 		ver.otbm = MAP_OTBM_4;
-		ver.client = CLIENT_VERSION_860;
+		if(g_gui.IsVersionLoaded()) {
+			ver.client = g_gui.GetCurrentVersionID();
+		} else if(ClientVersion* fallback = ClientVersion::getLatestVersion()) {
+			ver.client = fallback->getID();
+		} else {
+			ver.client = CLIENT_VERSION_860;
+		}
 	} else if(!IOMapOTBM::getVersionInfo(fn, ver)) {
 		// g_gui.PopupDialog("Error", "Could not open file \"" + fn.GetFullPath() + "\".", wxOK);
 		throw std::runtime_error("Could not open file \"" + nstr(fn.GetFullPath()) + "\".\nThis is not a valid OTBM file or it does not exist.");
